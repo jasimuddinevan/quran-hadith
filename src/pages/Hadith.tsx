@@ -20,24 +20,24 @@ import {
 } from '@/lib/hadithApi';
 
 const Hadith: React.FC = () => {
-  const { t, isEnglish, isBengali } = useLanguage();
+  const { t, isEnglish, isBengali, language } = useLanguage();
   const { addBookmark } = useBookmarks();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
   const [page, setPage] = useState(1);
 
-  // Fetch random hadiths for browse tab
+  // Fetch random hadiths for browse tab - pass language for translation
   const { data: randomHadiths, isLoading: isLoadingRandom, refetch: refetchRandom } = useQuery({
-    queryKey: ['randomHadiths'],
-    queryFn: () => fetchRandomHadiths(5),
+    queryKey: ['randomHadiths', language],
+    queryFn: () => fetchRandomHadiths(5, language),
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Fetch hadiths by collection
+  // Fetch hadiths by collection - pass language for translation
   const { data: collectionData, isLoading: isLoadingCollection } = useQuery({
-    queryKey: ['hadithsByCollection', selectedCollection, page],
-    queryFn: () => fetchHadithsByCollection(selectedCollection!, page, 10),
+    queryKey: ['hadithsByCollection', selectedCollection, page, language],
+    queryFn: () => fetchHadithsByCollection(selectedCollection!, page, 10, language),
     enabled: !!selectedCollection,
   });
 

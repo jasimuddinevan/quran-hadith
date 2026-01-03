@@ -8,6 +8,7 @@ import { BookmarkProvider } from "@/contexts/BookmarkContext";
 import Index from "./pages/Index";
 import Quran from "./pages/Quran";
 import SurahReader from "./pages/SurahReader";
+import Read from "./pages/Read";
 import Hadith from "./pages/Hadith";
 import Dua from "./pages/Dua";
 import NamesOfAllah from "./pages/NamesOfAllah";
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/quran" element={<Quran />} />
               <Route path="/quran/:surahId" element={<SurahReader />} />
+              <Route path="/read" element={<Read />} />
               <Route path="/hadith" element={<Hadith />} />
               <Route path="/dua" element={<Dua />} />
               <Route path="/names-of-allah" element={<NamesOfAllah />} />

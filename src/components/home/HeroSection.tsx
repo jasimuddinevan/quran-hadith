@@ -16,18 +16,39 @@ const HeroSection: React.FC = () => {
 
   return (
     <section className="relative overflow-hidden">
-      {/* Background with gradient and pattern */}
-      <div className="absolute inset-0 hero-gradient islamic-pattern" />
+      {/* Enhanced background with multiple layers */}
+      <div className="absolute inset-0 hero-gradient" />
+      
+      {/* Islamic geometric pattern overlay */}
+      <div className="absolute inset-0 islamic-pattern-enhanced" />
+      
+      {/* Decorative circles */}
+      <div className="absolute top-10 left-10 w-32 h-32 bg-white/5 rounded-full blur-2xl" />
+      <div className="absolute bottom-20 right-20 w-48 h-48 bg-white/5 rounded-full blur-3xl" />
+      <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-white/3 rounded-full blur-xl" />
       
       {/* Content */}
       <div className="relative container py-16 md:py-24">
         <div className="flex flex-col items-center text-center text-primary-foreground">
+          {/* Sparkle Icon */}
+          <div className="mb-4 animate-fade-in">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/10 backdrop-blur-sm">
+              <Sparkles className="h-6 w-6 text-white" />
+            </div>
+          </div>
+
           {/* Title */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-3 animate-fade-in">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-2 animate-fade-in">
             {t('hero.title')}
           </h1>
-          <p className="text-lg md:text-xl opacity-90 mb-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+          <p className="text-lg md:text-xl opacity-90 mb-2 animate-fade-in" style={{ animationDelay: '0.1s' }}>
             {t('hero.subtitle')}
+          </p>
+          
+          {/* AI Subtitle */}
+          <p className="text-sm md:text-base opacity-80 mb-8 max-w-lg animate-fade-in flex items-center gap-2" style={{ animationDelay: '0.15s' }}>
+            <Sparkles className="h-4 w-4" />
+            {t('hero.aiSubtitle')}
           </p>
 
           {/* AI Search Bar */}
@@ -37,8 +58,7 @@ const HeroSection: React.FC = () => {
             style={{ animationDelay: '0.2s' }}
           >
             <div className="relative flex items-center">
-              <div className="absolute left-4 flex items-center gap-2 text-muted-foreground">
-                <Sparkles className="h-5 w-5 text-primary" />
+              <div className="absolute left-4 flex items-center text-muted-foreground">
                 <Search className="h-5 w-5" />
               </div>
               <Input
@@ -46,21 +66,26 @@ const HeroSection: React.FC = () => {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder={t('hero.search')}
-                className="w-full pl-16 pr-14 py-6 text-base rounded-full bg-background text-foreground border-0 shadow-lg focus-visible:ring-2 focus-visible:ring-primary/50"
+                className="w-full pl-12 pr-28 py-6 text-base rounded-full bg-background text-foreground border-0 shadow-lg focus-visible:ring-2 focus-visible:ring-primary/50"
               />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                className="absolute right-2 h-10 w-10 rounded-full text-muted-foreground hover:text-primary hover:bg-accent"
-              >
-                <Mic className="h-5 w-5" />
-              </Button>
+              <div className="absolute right-2 flex items-center gap-1">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 rounded-full text-muted-foreground hover:text-primary hover:bg-accent"
+                >
+                  <Mic className="h-5 w-5" />
+                </Button>
+                <Button
+                  type="submit"
+                  size="icon"
+                  className="h-10 w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90"
+                >
+                  <Search className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
-            <p className="mt-3 text-sm opacity-75 flex items-center justify-center gap-1">
-              <Sparkles className="h-3 w-3" />
-              {t('hero.aiPowered')}
-            </p>
           </form>
         </div>
       </div>

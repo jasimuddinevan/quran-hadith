@@ -3,7 +3,8 @@ import { Heart } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Footer: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, isEnglish } = useLanguage();
+  const currentYear = new Date().getFullYear();
 
   return (
     <footer className="border-t border-border bg-card">
@@ -12,6 +13,15 @@ const Footer: React.FC = () => {
           <div className="flex items-center gap-2 text-muted-foreground">
             <span>{t('footer.madeWith')}</span>
             <Heart className="h-4 w-4 text-destructive fill-destructive" />
+            <span>{isEnglish ? 'by' : 'তৈরি করেছেন'}</span>
+            <a 
+              href="https://bio.link/jasimuddin" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="font-medium text-primary hover:underline transition-colors"
+            >
+              Jasim Uddin
+            </a>
           </div>
           
           <div className="flex gap-4">
@@ -36,7 +46,7 @@ const Footer: React.FC = () => {
           </div>
           
           <p className="text-sm text-muted-foreground">
-            {t('footer.copyright')}
+            © {currentYear} {isEnglish ? 'Quran Insight. All rights reserved.' : 'কুরআন ইনসাইট। সর্বস্বত্ব সংরক্ষিত।'}
           </p>
         </div>
       </div>

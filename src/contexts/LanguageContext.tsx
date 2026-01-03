@@ -105,6 +105,8 @@ const translations: Record<Language, Record<string, string>> = {
     'quran.verses': 'verses',
     'quran.meccan': 'Meccan',
     'quran.medinan': 'Medinan',
+    'quran.play': 'Play',
+    'quran.pause': 'Pause',
     'quran.searchSurah': 'Search Surah...',
     
     // Hadith
@@ -242,6 +244,8 @@ const translations: Record<Language, Record<string, string>> = {
     'quran.meccan': 'মক্কী',
     'quran.medinan': 'মাদানী',
     'quran.searchSurah': 'সূরা খুঁজুন...',
+    'quran.play': 'বাজান',
+    'quran.pause': 'বিরতি',
     
     // Hadith
     'hadith.title': 'হাদিস সংকলন',

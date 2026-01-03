@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { BookmarkProvider } from "@/contexts/BookmarkContext";
+import OfflineIndicator from "@/components/OfflineIndicator";
 import Index from "./pages/Index";
 import Quran from "./pages/Quran";
 import SurahReader from "./pages/SurahReader";
@@ -24,6 +25,7 @@ const App = () => (
     <LanguageProvider>
       <BookmarkProvider>
         <TooltipProvider>
+          <OfflineIndicator />
           <Toaster />
           <Sonner />
           <BrowserRouter>

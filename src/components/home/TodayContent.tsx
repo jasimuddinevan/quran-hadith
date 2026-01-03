@@ -62,32 +62,32 @@ const TodayContent: React.FC = () => {
   };
 
   return (
-    <section className="container py-8 pb-16">
-      <h2 className="text-2xl md:text-3xl font-bold text-center mb-8 text-foreground">
+    <section className="container py-10 md:py-14 pb-16">
+      <h2 className="text-2xl md:text-4xl font-bold text-center mb-10 text-foreground">
         {t('today.title')}
       </h2>
 
-      <div className="grid md:grid-cols-3 gap-6">
+      <div className="grid md:grid-cols-3 gap-6 md:gap-8">
         {/* Verse of the Day */}
         <Card className="overflow-hidden">
-          <CardHeader className="bg-primary/5 pb-3">
+          <CardHeader className="bg-primary/5 pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg flex items-center gap-2 text-foreground">
-                <BookOpen className="h-5 w-5 text-primary" />
+              <CardTitle className="text-lg md:text-xl flex items-center gap-3 text-foreground">
+                <BookOpen className="h-6 w-6 text-primary" />
                 {t('today.verseOfDay')}
               </CardTitle>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className="h-9 w-9"
                 onClick={() => handleCopy(verseOfDay.arabic + '\n\n' + (isEnglish ? verseOfDay.translation : verseOfDay.translationBn))}
               >
-                <Copy className="h-4 w-4" />
+                <Copy className="h-5 w-5" />
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="pt-4">
-            <p className="arabic-text text-xl md:text-2xl text-center mb-4 text-foreground leading-loose">
+          <CardContent className="pt-5">
+            <p className="arabic-text text-2xl md:text-3xl text-center mb-5 text-foreground leading-loose">
               {verseOfDay.arabic}
             </p>
             <p className="text-muted-foreground text-sm mb-3">
@@ -112,27 +112,27 @@ const TodayContent: React.FC = () => {
 
         {/* Dua of the Day */}
         <Card className="overflow-hidden">
-          <CardHeader className="bg-primary/5 pb-3">
+          <CardHeader className="bg-primary/5 pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg flex items-center gap-2 text-foreground">
-                <span className="text-xl">🤲</span>
+              <CardTitle className="text-lg md:text-xl flex items-center gap-3 text-foreground">
+                <span className="text-2xl">🤲</span>
                 {t('today.duaOfDay')}
               </CardTitle>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className="h-9 w-9"
                 onClick={() => handleCopy(duaOfDay.arabic + '\n\n' + (isEnglish ? duaOfDay.translation : duaOfDay.translationBn))}
               >
-                <Copy className="h-4 w-4" />
+                <Copy className="h-5 w-5" />
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="pt-4">
-            <Badge variant="secondary" className="mb-3 bg-primary/10 text-primary hover:bg-primary/20">
+          <CardContent className="pt-5">
+            <Badge variant="secondary" className="mb-4 text-sm bg-primary/10 text-primary hover:bg-primary/20">
               {isEnglish ? duaOfDay.category : duaOfDay.categoryBn}
             </Badge>
-            <p className="arabic-text text-xl md:text-2xl text-center mb-4 text-foreground leading-loose">
+            <p className="arabic-text text-2xl md:text-3xl text-center mb-5 text-foreground leading-loose">
               {duaOfDay.arabic}
             </p>
             <p className="text-muted-foreground text-sm mb-4">
@@ -149,27 +149,27 @@ const TodayContent: React.FC = () => {
 
         {/* Hadith of the Day */}
         <Card className="overflow-hidden">
-          <CardHeader className="bg-primary/5 pb-3">
+          <CardHeader className="bg-primary/5 pb-4">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-lg flex items-center gap-2 text-foreground">
-                <span className="text-xl">📚</span>
+              <CardTitle className="text-lg md:text-xl flex items-center gap-3 text-foreground">
+                <span className="text-2xl">📚</span>
                 {t('today.hadithOfDay')}
               </CardTitle>
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-8 w-8"
+                className="h-9 w-9"
                 onClick={() => handleCopy(hadithOfDay.arabic + '\n\n' + (isEnglish ? hadithOfDay.narration : hadithOfDay.narrationBn))}
               >
-                <Copy className="h-4 w-4" />
+                <Copy className="h-5 w-5" />
               </Button>
             </div>
           </CardHeader>
-          <CardContent className="pt-4">
-            <Badge variant="secondary" className="mb-3 bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200">
+          <CardContent className="pt-5">
+            <Badge variant="secondary" className="mb-4 text-sm bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200">
               {isEnglish ? hadithOfDay.source : hadithOfDay.sourceBn}
             </Badge>
-            <p className="arabic-text text-lg text-center mb-4 text-foreground leading-loose line-clamp-2">
+            <p className="arabic-text text-xl md:text-2xl text-center mb-5 text-foreground leading-loose line-clamp-2">
               {hadithOfDay.arabic}
             </p>
             <p className="text-muted-foreground text-sm mb-4 line-clamp-3">

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, BookOpen, Home, Book, FileText, Moon, Settings } from 'lucide-react';
+import { Menu, X, BookOpen, Home, Book, FileText, Settings, BookMarked } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -13,16 +13,13 @@ const Header: React.FC = () => {
   const navItems = [
     { path: '/', label: t('nav.home'), icon: Home },
     { path: '/quran', label: t('nav.quran'), icon: BookOpen },
+    { path: '/read', label: t('nav.read'), icon: BookMarked },
     { path: '/hadith', label: t('nav.hadith'), icon: Book },
     { path: '/dua', label: t('nav.dua'), icon: FileText },
     { path: '/settings', label: t('nav.settings'), icon: Settings },
   ];
 
   const isActive = (path: string) => location.pathname === path;
-
-  const toggleLanguage = () => {
-    setLanguage(isEnglish ? 'bn' : 'en');
-  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -63,14 +60,31 @@ const Header: React.FC = () => {
 
         {/* Language Toggle & Mobile Menu */}
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={toggleLanguage}
-            className="text-xs font-medium"
-          >
-            {isEnglish ? 'বাংলা' : 'English'}
-          </Button>
+          {/* Pill-style language toggle */}
+          <div className="flex items-center bg-muted rounded-full p-1">
+            <button
+              onClick={() => setLanguage('bn')}
+              className={cn(
+                'px-3 py-1.5 text-xs font-medium rounded-full transition-all',
+                !isEnglish
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              বাংলা
+            </button>
+            <button
+              onClick={() => setLanguage('en')}
+              className={cn(
+                'px-3 py-1.5 text-xs font-medium rounded-full transition-all',
+                isEnglish
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+              )}
+            >
+              English
+            </button>
+          </div>
 
           <Button
             variant="ghost"

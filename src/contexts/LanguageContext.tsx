@@ -23,25 +23,28 @@ const translations: Record<Language, Record<string, string>> = {
     // Hero
     'hero.title': 'Quran Insight',
     'hero.subtitle': 'For Learning Quran Easily',
-    'hero.search': 'Search anything about Islam, Quran, Hadith...',
-    'hero.aiPowered': 'AI-powered search',
+    'hero.search': 'Example: What does Quran say about prayer?',
+    'hero.aiSubtitle': 'Search in Bengali or English. Get accurate information through AI.',
     
     // Quick Access
     'quick.namesOfAllah': '99 Names of Allah',
-    'quick.namesDesc': 'Learn the beautiful names',
+    'quick.namesDesc': 'Beautiful names with meanings',
     'quick.prayer': 'Prayer & Calendar',
-    'quick.prayerDesc': 'Prayer times & Islamic dates',
+    'quick.prayerDesc': 'Prayer times & Islamic events',
     'quick.duas': 'Daily Duas',
-    'quick.duasDesc': 'Essential supplications',
+    'quick.duasDesc': "Daily Dua's and Supplications",
     'quick.bookmarks': 'Bookmarks',
-    'quick.bookmarksDesc': 'Your saved items',
+    'quick.bookmarksDesc': 'Your saved verses & duas',
     
     // Today's Content
-    'today.title': "Today's Islamic Content",
+    'today.title': "Today's Verse, Dua & Hadith",
     'today.verseOfDay': 'Verse of the Day',
     'today.duaOfDay': 'Dua of the Day',
     'today.hadithOfDay': 'Hadith of the Day',
     'today.viewFull': 'View Full',
+    'today.viewAllHadith': 'View all Hadith',
+    'today.dailyLifeDuas': 'Daily Life Duas',
+    'today.beforeSleeping': 'Before Sleeping',
     
     // Common
     'common.loading': 'Loading...',
@@ -116,25 +119,28 @@ const translations: Record<Language, Record<string, string>> = {
     // Hero
     'hero.title': 'কুরআন ইনসাইট',
     'hero.subtitle': 'সহজে কুরআন শেখার জন্য',
-    'hero.search': 'ইসলাম, কুরআন, হাদিস সম্পর্কে যেকোনো কিছু খুঁজুন...',
-    'hero.aiPowered': 'এআই-চালিত সার্চ',
+    'hero.search': 'উদাহরণ: নামাজ সম্পর্কে কুরআন কি বলে?',
+    'hero.aiSubtitle': 'বাংলা বা ইংরেজিতে সার্চ করুন। এআই এর মাধ্যমে সঠিক তথ্য পান।',
     
     // Quick Access
     'quick.namesOfAllah': 'আল্লাহর ৯৯ নাম',
-    'quick.namesDesc': 'সুন্দর নামগুলো শিখুন',
+    'quick.namesDesc': 'অর্থসহ সুন্দর নামগুলো',
     'quick.prayer': 'নামাজ ও ক্যালেন্ডার',
-    'quick.prayerDesc': 'নামাজের সময় ও ইসলামিক তারিখ',
+    'quick.prayerDesc': 'নামাজের সময় ও ইসলামিক ইভেন্ট',
     'quick.duas': 'দৈনিক দোয়া',
-    'quick.duasDesc': 'প্রয়োজনীয় দোয়াসমূহ',
+    'quick.duasDesc': 'দৈনন্দিন দোয়া ও মুনাজাত',
     'quick.bookmarks': 'বুকমার্ক',
-    'quick.bookmarksDesc': 'আপনার সংরক্ষিত আইটেম',
+    'quick.bookmarksDesc': 'আপনার সংরক্ষিত আয়াত ও দোয়া',
     
     // Today's Content
-    'today.title': 'আজকের ইসলামিক বিষয়বস্তু',
+    'today.title': 'আজকের আয়াত, দোয়া ও হাদিস',
     'today.verseOfDay': 'আজকের আয়াত',
     'today.duaOfDay': 'আজকের দোয়া',
     'today.hadithOfDay': 'আজকের হাদিস',
     'today.viewFull': 'সম্পূর্ণ দেখুন',
+    'today.viewAllHadith': 'সব হাদিস দেখুন',
+    'today.dailyLifeDuas': 'দৈনন্দিন দোয়া',
+    'today.beforeSleeping': 'ঘুমানোর আগে',
     
     // Common
     'common.loading': 'লোড হচ্ছে...',
@@ -204,7 +210,7 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export const LanguageProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>(() => {
     const saved = localStorage.getItem('language');
-    return (saved as Language) || 'en';
+    return (saved as Language) || 'bn';
   });
 
   const setLanguage = (lang: Language) => {

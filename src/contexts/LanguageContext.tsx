@@ -46,6 +46,46 @@ const translations: Record<Language, Record<string, string>> = {
     'today.dailyLifeDuas': 'Daily Life Duas',
     'today.beforeSleeping': 'Before Sleeping',
     
+    // Featured Surah
+    'featured.title': 'Featured Surah',
+    'featured.surahName': 'Surah Al-Fatiha',
+    'featured.surahDesc': 'The Opening - The most recited surah in the Quran',
+    'featured.readNow': 'Read Now',
+    
+    // Benefits
+    'benefits.title': 'Benefits of Reciting Quran',
+    'benefits.subtitle': 'Discover the countless blessings and rewards of connecting with the Holy Quran daily',
+    'benefits.reward': 'Daily Rewards',
+    'benefits.rewardDesc': 'Earn immense rewards for every letter recited',
+    'benefits.peace': 'Peace of Mind',
+    'benefits.peaceDesc': 'Find tranquility and calm in daily recitation',
+    'benefits.guidance': 'Life Guidance',
+    'benefits.guidanceDesc': 'Receive guidance for all aspects of life',
+    'benefits.spirituality': 'Spiritual Growth',
+    'benefits.spiritualityDesc': 'Strengthen your connection with Allah',
+    'benefits.protection': 'Divine Protection',
+    'benefits.protectionDesc': 'Shield yourself with sacred verses',
+    'benefits.blessings': 'Abundant Blessings',
+    'benefits.blessingsDesc': 'Invite barakah into your daily life',
+    
+    // Stats
+    'stats.title': 'Explore Our Collection',
+    'stats.surahs': 'Surahs Available',
+    'stats.verses': 'Holy Verses',
+    'stats.hadithBooks': 'Hadith Books',
+    'stats.duas': 'Daily Duas',
+    
+    // Explore
+    'explore.title': 'Explore More Features',
+    'explore.subtitle': 'Discover all the tools and resources to enhance your Islamic learning journey',
+    'explore.namesOfAllah': '99 Names of Allah',
+    'explore.namesOfAllahDesc': 'Learn the beautiful names of Allah with meanings and benefits',
+    'explore.prayerTimes': 'Prayer Times',
+    'explore.prayerTimesDesc': 'Never miss a prayer with accurate prayer times for your location',
+    'explore.bookmarks': 'Your Bookmarks',
+    'explore.bookmarksDesc': 'Access all your saved verses, duas, and hadiths in one place',
+    'explore.learnMore': 'Learn More',
+    
     // Common
     'common.loading': 'Loading...',
     'common.error': 'Something went wrong',
@@ -141,6 +181,46 @@ const translations: Record<Language, Record<string, string>> = {
     'today.viewAllHadith': 'সব হাদিস দেখুন',
     'today.dailyLifeDuas': 'দৈনন্দিন দোয়া',
     'today.beforeSleeping': 'ঘুমানোর আগে',
+    
+    // Featured Surah
+    'featured.title': 'বিশেষ সূরা',
+    'featured.surahName': 'সূরা আল-ফাতিহা',
+    'featured.surahDesc': 'প্রারম্ভিকা - কুরআনের সবচেয়ে বেশি পঠিত সূরা',
+    'featured.readNow': 'এখনই পড়ুন',
+    
+    // Benefits
+    'benefits.title': 'কুরআন তেলাওয়াতের উপকারিতা',
+    'benefits.subtitle': 'প্রতিদিন পবিত্র কুরআনের সাথে সংযুক্ত থাকার অগণিত বরকত ও পুরস্কার আবিষ্কার করুন',
+    'benefits.reward': 'দৈনিক পুরস্কার',
+    'benefits.rewardDesc': 'প্রতিটি অক্ষর পাঠে অপরিসীম সওয়াব অর্জন করুন',
+    'benefits.peace': 'মনের শান্তি',
+    'benefits.peaceDesc': 'দৈনিক তেলাওয়াতে প্রশান্তি খুঁজুন',
+    'benefits.guidance': 'জীবনের দিকনির্দেশনা',
+    'benefits.guidanceDesc': 'জীবনের সকল ক্ষেত্রে হেদায়েত পান',
+    'benefits.spirituality': 'আধ্যাত্মিক উন্নতি',
+    'benefits.spiritualityDesc': 'আল্লাহর সাথে সম্পর্ক মজবুত করুন',
+    'benefits.protection': 'ঐশ্বরিক সুরক্ষা',
+    'benefits.protectionDesc': 'পবিত্র আয়াত দিয়ে নিজেকে রক্ষা করুন',
+    'benefits.blessings': 'প্রচুর বরকত',
+    'benefits.blessingsDesc': 'দৈনন্দিন জীবনে বরকত আনুন',
+    
+    // Stats
+    'stats.title': 'আমাদের সংকলন অন্বেষণ করুন',
+    'stats.surahs': 'সূরা উপলব্ধ',
+    'stats.verses': 'পবিত্র আয়াত',
+    'stats.hadithBooks': 'হাদিস গ্রন্থ',
+    'stats.duas': 'দৈনিক দোয়া',
+    
+    // Explore
+    'explore.title': 'আরও বৈশিষ্ট্য অন্বেষণ করুন',
+    'explore.subtitle': 'আপনার ইসলামিক শিক্ষার যাত্রাকে উন্নত করতে সকল সরঞ্জাম ও সম্পদ আবিষ্কার করুন',
+    'explore.namesOfAllah': 'আল্লাহর ৯৯ নাম',
+    'explore.namesOfAllahDesc': 'অর্থ ও ফজিলতসহ আল্লাহর সুন্দর নামগুলো শিখুন',
+    'explore.prayerTimes': 'নামাজের সময়',
+    'explore.prayerTimesDesc': 'আপনার অবস্থানের সঠিক নামাজের সময় দিয়ে কোনো নামাজ মিস করবেন না',
+    'explore.bookmarks': 'আপনার বুকমার্ক',
+    'explore.bookmarksDesc': 'আপনার সংরক্ষিত আয়াত, দোয়া ও হাদিস এক জায়গায় অ্যাক্সেস করুন',
+    'explore.learnMore': 'আরও জানুন',
     
     // Common
     'common.loading': 'লোড হচ্ছে...',

@@ -1,13 +1,33 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, BookOpen, Home, Book, FileText, Settings, BookMarked } from 'lucide-react';
+import { Menu, X, BookOpen, Home, Book, FileText, Settings, BookMarked, Moon, Sun } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 const Header: React.FC = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      if (saved) return saved === 'dark';
+      return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    }
+    return false;
+  });
   const { t, language, setLanguage, isEnglish } = useLanguage();
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDark]);
+
+  const toggleTheme = () => setIsDark(!isDark);
   const location = useLocation();
 
   const navItems = [
@@ -58,8 +78,22 @@ const Header: React.FC = () => {
           ))}
         </nav>
 
-        {/* Language Toggle & Mobile Menu */}
+        {/* Theme Toggle, Language Toggle & Mobile Menu */}
         <div className="flex items-center gap-2">
+          {/* Dark Mode Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggleTheme}
+            className="rounded-full h-9 w-9"
+          >
+            {isDark ? (
+              <Sun className="h-5 w-5 text-yellow-500 transition-transform" />
+            ) : (
+              <Moon className="h-5 w-5 transition-transform" />
+            )}
+          </Button>
+
           {/* Pill-style language toggle */}
           <div className="flex items-center bg-muted rounded-full p-1">
             <button

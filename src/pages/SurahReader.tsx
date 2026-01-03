@@ -28,7 +28,7 @@ interface SurahData {
 
 const SurahReader: React.FC = () => {
   const { surahId } = useParams<{ surahId: string }>();
-  const { t, isEnglish } = useLanguage();
+  const { t, isEnglish, isBengali } = useLanguage();
   const { addBookmark } = useBookmarks();
   const { toast } = useToast();
   const [surahArabic, setSurahArabic] = useState<SurahData | null>(null);
@@ -41,9 +41,10 @@ const SurahReader: React.FC = () => {
       setLoading(true);
       setError(null);
       try {
+        const translationEdition = isBengali ? 'bn.bengali' : 'en.sahih';
         const [arabicRes, translationRes] = await Promise.all([
           fetch(`https://api.alquran.cloud/v1/surah/${surahId}`),
-          fetch(`https://api.alquran.cloud/v1/surah/${surahId}/en.sahih`),
+          fetch(`https://api.alquran.cloud/v1/surah/${surahId}/${translationEdition}`),
         ]);
 
         const arabicData = await arabicRes.json();
@@ -65,7 +66,7 @@ const SurahReader: React.FC = () => {
     if (surahId) {
       fetchSurah();
     }
-  }, [surahId]);
+  }, [surahId, isBengali]);
 
   const handleCopy = (arabic: string, translation: string, ayahNumber: number) => {
     const text = `${arabic}\n\n${translation}\n\n- ${surahArabic?.englishName} ${ayahNumber}`;

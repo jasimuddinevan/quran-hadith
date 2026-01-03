@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Bookmark, Copy, Play, Pause, Loader2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Bookmark, Copy, Play, Pause, Loader2, Square } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBookmarks } from '@/contexts/BookmarkContext';
@@ -42,7 +42,9 @@ const SurahReader: React.FC = () => {
   const [currentlyPlaying, setCurrentlyPlaying] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
+  const [isPlayingAll, setIsPlayingAll] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const playAllRef = useRef<boolean>(false);
 
   useEffect(() => {
     const fetchSurah = async () => {
@@ -90,8 +92,10 @@ const SurahReader: React.FC = () => {
         audioRef.current.pause();
         audioRef.current = null;
       }
+      playAllRef.current = false;
       setCurrentlyPlaying(null);
       setIsPlaying(false);
+      setIsPlayingAll(false);
     };
   }, [surahId, isBengali]);
 
@@ -118,18 +122,13 @@ const SurahReader: React.FC = () => {
     });
   };
 
-  const handlePlayVerse = (ayahNumber: number) => {
+  const playVerse = (ayahNumber: number, autoAdvance: boolean = false) => {
     const audioUrl = audioUrls[ayahNumber];
-    if (!audioUrl) return;
-
-    // If clicking on the same verse that's playing, toggle play/pause
-    if (currentlyPlaying === ayahNumber && audioRef.current) {
-      if (isPlaying) {
-        audioRef.current.pause();
-        setIsPlaying(false);
-      } else {
-        audioRef.current.play();
-        setIsPlaying(true);
+    if (!audioUrl) {
+      if (autoAdvance) {
+        // No more verses, stop play all
+        playAllRef.current = false;
+        setIsPlayingAll(false);
       }
       return;
     }
@@ -145,6 +144,12 @@ const SurahReader: React.FC = () => {
     audioRef.current = audio;
     setCurrentlyPlaying(ayahNumber);
 
+    // Scroll the verse into view
+    const verseElement = document.getElementById(`verse-${ayahNumber}`);
+    if (verseElement) {
+      verseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
     audio.oncanplay = () => {
       setIsBuffering(false);
     };
@@ -159,14 +164,34 @@ const SurahReader: React.FC = () => {
     };
 
     audio.onended = () => {
-      setCurrentlyPlaying(null);
-      setIsPlaying(false);
+      // Check if we should auto-advance to next verse
+      if (playAllRef.current && surahArabic) {
+        const nextAyah = ayahNumber + 1;
+        if (nextAyah <= surahArabic.numberOfAyahs) {
+          playVerse(nextAyah, true);
+        } else {
+          // Finished all verses
+          playAllRef.current = false;
+          setIsPlayingAll(false);
+          setCurrentlyPlaying(null);
+          setIsPlaying(false);
+          toast({
+            title: isEnglish ? 'Completed' : 'সম্পন্ন',
+            description: isEnglish ? 'Finished playing all verses' : 'সব আয়াত বাজানো শেষ',
+          });
+        }
+      } else {
+        setCurrentlyPlaying(null);
+        setIsPlaying(false);
+      }
     };
 
     audio.onerror = () => {
       setIsBuffering(false);
       setCurrentlyPlaying(null);
       setIsPlaying(false);
+      playAllRef.current = false;
+      setIsPlayingAll(false);
       toast({
         title: isEnglish ? 'Audio Error' : 'অডিও ত্রুটি',
         description: isEnglish ? 'Failed to load audio' : 'অডিও লোড করতে ব্যর্থ',
@@ -177,7 +202,53 @@ const SurahReader: React.FC = () => {
     audio.play().catch(() => {
       setIsBuffering(false);
       setCurrentlyPlaying(null);
+      playAllRef.current = false;
+      setIsPlayingAll(false);
     });
+  };
+
+  const handlePlayVerse = (ayahNumber: number) => {
+    // If clicking on the same verse that's playing, toggle play/pause
+    if (currentlyPlaying === ayahNumber && audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        audioRef.current.play();
+        setIsPlaying(true);
+      }
+      return;
+    }
+
+    // Stop play all mode if manually playing a verse
+    playAllRef.current = false;
+    setIsPlayingAll(false);
+    
+    playVerse(ayahNumber);
+  };
+
+  const handlePlayAll = () => {
+    if (isPlayingAll) {
+      // Stop playing
+      handleStopAll();
+      return;
+    }
+
+    // Start playing from verse 1
+    playAllRef.current = true;
+    setIsPlayingAll(true);
+    playVerse(1, true);
+  };
+
+  const handleStopAll = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current = null;
+    }
+    playAllRef.current = false;
+    setIsPlayingAll(false);
+    setCurrentlyPlaying(null);
+    setIsPlaying(false);
   };
 
   const surahNumber = parseInt(surahId || '1');
@@ -245,9 +316,35 @@ const SurahReader: React.FC = () => {
                 <h1 className="text-2xl font-bold text-foreground mb-1">
                   {surahArabic.englishName}
                 </h1>
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground mb-4">
                   {surahArabic.englishNameTranslation} • {surahArabic.numberOfAyahs} {t('quran.verses')}
                 </p>
+                
+                {/* Play All Button */}
+                <div className="flex justify-center gap-2">
+                  <Button
+                    onClick={handlePlayAll}
+                    variant={isPlayingAll ? "destructive" : "default"}
+                    className="gap-2"
+                  >
+                    {isPlayingAll ? (
+                      <>
+                        <Square className="h-4 w-4" />
+                        {isEnglish ? 'Stop' : 'থামান'}
+                      </>
+                    ) : (
+                      <>
+                        <Play className="h-4 w-4" />
+                        {isEnglish ? 'Play All' : 'সব বাজান'}
+                      </>
+                    )}
+                  </Button>
+                  {isPlayingAll && currentlyPlaying && (
+                    <span className="text-sm text-muted-foreground flex items-center">
+                      {isEnglish ? 'Playing verse' : 'বাজছে আয়াত'} {currentlyPlaying}/{surahArabic.numberOfAyahs}
+                    </span>
+                  )}
+                </div>
               </div>
             </Card>
 
@@ -274,7 +371,8 @@ const SurahReader: React.FC = () => {
                 
                 return (
                   <Card 
-                    key={ayah.number} 
+                    key={ayah.number}
+                    id={`verse-${ayah.numberInSurah}`}
                     className={`overflow-hidden transition-all duration-300 ${
                       isCurrentlyPlaying ? 'ring-2 ring-primary shadow-lg' : ''
                     }`}

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Bookmark, Copy, Share2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Bookmark, Copy, Play, Pause, Loader2 } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBookmarks } from '@/contexts/BookmarkContext';
@@ -14,6 +14,7 @@ interface Ayah {
   numberInSurah: number;
   text: string;
   translation?: string;
+  audio?: string;
 }
 
 interface SurahData {
@@ -33,8 +34,15 @@ const SurahReader: React.FC = () => {
   const { toast } = useToast();
   const [surahArabic, setSurahArabic] = useState<SurahData | null>(null);
   const [surahTranslation, setSurahTranslation] = useState<SurahData | null>(null);
+  const [audioUrls, setAudioUrls] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Audio state
+  const [currentlyPlaying, setCurrentlyPlaying] = useState<number | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isBuffering, setIsBuffering] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     const fetchSurah = async () => {
@@ -42,19 +50,28 @@ const SurahReader: React.FC = () => {
       setError(null);
       try {
         const translationEdition = isBengali ? 'bn.bengali' : 'en.sahih';
-        const [arabicRes, translationRes] = await Promise.all([
+        const [arabicRes, translationRes, audioRes] = await Promise.all([
           fetch(`https://api.alquran.cloud/v1/surah/${surahId}`),
           fetch(`https://api.alquran.cloud/v1/surah/${surahId}/${translationEdition}`),
+          fetch(`https://api.alquran.cloud/v1/surah/${surahId}/ar.alafasy`),
         ]);
 
         const arabicData = await arabicRes.json();
         const translationData = await translationRes.json();
+        const audioData = await audioRes.json();
 
         if (arabicData.code === 200) {
           setSurahArabic(arabicData.data);
         }
         if (translationData.code === 200) {
           setSurahTranslation(translationData.data);
+        }
+        if (audioData.code === 200 && audioData.data?.ayahs) {
+          const urls: Record<number, string> = {};
+          audioData.data.ayahs.forEach((ayah: { numberInSurah: number; audio: string }) => {
+            urls[ayah.numberInSurah] = ayah.audio;
+          });
+          setAudioUrls(urls);
         }
       } catch (err) {
         setError('Failed to load surah');
@@ -66,6 +83,16 @@ const SurahReader: React.FC = () => {
     if (surahId) {
       fetchSurah();
     }
+    
+    // Cleanup audio on unmount or surah change
+    return () => {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
+      setCurrentlyPlaying(null);
+      setIsPlaying(false);
+    };
   }, [surahId, isBengali]);
 
   const handleCopy = (arabic: string, translation: string, ayahNumber: number) => {
@@ -88,6 +115,68 @@ const SurahReader: React.FC = () => {
     toast({
       title: isEnglish ? 'Bookmarked!' : 'বুকমার্ক হয়েছে!',
       description: isEnglish ? 'Verse added to bookmarks' : 'আয়াত বুকমার্কে যোগ হয়েছে',
+    });
+  };
+
+  const handlePlayVerse = (ayahNumber: number) => {
+    const audioUrl = audioUrls[ayahNumber];
+    if (!audioUrl) return;
+
+    // If clicking on the same verse that's playing, toggle play/pause
+    if (currentlyPlaying === ayahNumber && audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+        setIsPlaying(false);
+      } else {
+        audioRef.current.play();
+        setIsPlaying(true);
+      }
+      return;
+    }
+
+    // Stop current audio if playing
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+
+    // Create new audio and play
+    setIsBuffering(true);
+    const audio = new Audio(audioUrl);
+    audioRef.current = audio;
+    setCurrentlyPlaying(ayahNumber);
+
+    audio.oncanplay = () => {
+      setIsBuffering(false);
+    };
+
+    audio.onplay = () => {
+      setIsPlaying(true);
+      setIsBuffering(false);
+    };
+
+    audio.onpause = () => {
+      setIsPlaying(false);
+    };
+
+    audio.onended = () => {
+      setCurrentlyPlaying(null);
+      setIsPlaying(false);
+    };
+
+    audio.onerror = () => {
+      setIsBuffering(false);
+      setCurrentlyPlaying(null);
+      setIsPlaying(false);
+      toast({
+        title: isEnglish ? 'Audio Error' : 'অডিও ত্রুটি',
+        description: isEnglish ? 'Failed to load audio' : 'অডিও লোড করতে ব্যর্থ',
+        variant: 'destructive',
+      });
+    };
+
+    audio.play().catch(() => {
+      setIsBuffering(false);
+      setCurrentlyPlaying(null);
     });
   };
 
@@ -180,8 +269,16 @@ const SurahReader: React.FC = () => {
             <div className="space-y-4">
               {surahArabic.ayahs.map((ayah, index) => {
                 const translation = surahTranslation?.ayahs[index]?.text || '';
+                const isCurrentlyPlaying = currentlyPlaying === ayah.numberInSurah;
+                const hasAudio = !!audioUrls[ayah.numberInSurah];
+                
                 return (
-                  <Card key={ayah.number} className="overflow-hidden">
+                  <Card 
+                    key={ayah.number} 
+                    className={`overflow-hidden transition-all duration-300 ${
+                      isCurrentlyPlaying ? 'ring-2 ring-primary shadow-lg' : ''
+                    }`}
+                  >
                     <CardContent className="p-4 md:p-6">
                       {/* Verse Number Badge */}
                       <div className="flex justify-between items-start mb-4">
@@ -191,10 +288,28 @@ const SurahReader: React.FC = () => {
                           </span>
                         </div>
                         <div className="flex gap-1">
+                          {hasAudio && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={() => handlePlayVerse(ayah.numberInSurah)}
+                              className={isCurrentlyPlaying ? 'text-primary' : ''}
+                              title={isEnglish ? (isCurrentlyPlaying && isPlaying ? 'Pause' : 'Play') : (isCurrentlyPlaying && isPlaying ? 'বিরতি' : 'বাজান')}
+                            >
+                              {isCurrentlyPlaying && isBuffering ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : isCurrentlyPlaying && isPlaying ? (
+                                <Pause className="h-4 w-4" />
+                              ) : (
+                                <Play className="h-4 w-4" />
+                              )}
+                            </Button>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"
                             onClick={() => handleCopy(ayah.text, translation, ayah.numberInSurah)}
+                            title={t('common.copy')}
                           >
                             <Copy className="h-4 w-4" />
                           </Button>
@@ -202,6 +317,7 @@ const SurahReader: React.FC = () => {
                             variant="ghost"
                             size="icon"
                             onClick={() => handleBookmark(ayah, translation)}
+                            title={t('common.bookmark')}
                           >
                             <Bookmark className="h-4 w-4" />
                           </Button>

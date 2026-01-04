@@ -61,24 +61,32 @@ const BenefitsSection: React.FC = () => {
       </p>
 
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
-        {benefits.map((benefit, index) => (
-          <Card 
-            key={index} 
-            className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
-          >
-            <CardContent className="p-5 md:p-6 text-center">
-              <div className={`${benefit.bgColor} p-4 rounded-2xl inline-block mb-4 group-hover:scale-110 transition-transform`}>
-                <benefit.icon className={`h-7 w-7 md:h-8 md:w-8 ${benefit.color}`} />
-              </div>
-              <h3 className="font-semibold text-base md:text-lg text-foreground mb-2">
-                {benefit.title}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {benefit.description}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        {benefits.map((benefit, index) => {
+          const gradientClass = index % 6 === 0 ? 'card-gradient-amber' :
+                                index % 6 === 1 ? 'card-gradient-rose' :
+                                index % 6 === 2 ? 'card-gradient-teal' :
+                                index % 6 === 3 ? 'card-gradient-purple' :
+                                index % 6 === 4 ? 'card-gradient-green' :
+                                'card-gradient-purple';
+          return (
+            <Card 
+              key={index} 
+              className={`group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 ${gradientClass}`}
+            >
+              <CardContent className="p-5 md:p-6 text-center">
+                <div className={`${benefit.bgColor} p-4 rounded-2xl inline-block mb-4 group-hover:scale-110 transition-transform`}>
+                  <benefit.icon className={`h-7 w-7 md:h-8 md:w-8 ${benefit.color}`} />
+                </div>
+                <h3 className="font-semibold text-base md:text-lg text-foreground mb-2">
+                  {benefit.title}
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {benefit.description}
+                </p>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </section>
   );

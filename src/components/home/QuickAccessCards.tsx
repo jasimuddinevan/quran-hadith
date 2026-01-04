@@ -48,7 +48,7 @@ const QuickAccessCards: React.FC = () => {
         {cards.map((card, index) => (
           <Link key={card.path} to={card.path}>
             <Card 
-              className="h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer group"
+              className="h-full transition-all duration-300 hover:shadow-lg hover:-translate-y-1 cursor-pointer group card-gradient-teal border-primary/10"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <CardContent className="p-5 md:p-8 flex flex-col items-center text-center">

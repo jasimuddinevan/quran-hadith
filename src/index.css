@@ -150,4 +150,66 @@
   .safe-area-pb {
     padding-bottom: env(safe-area-inset-bottom);
   }
+
+  /* Card gradient backgrounds */
+  .card-gradient-teal {
+    background: linear-gradient(135deg, 
+      hsl(168 56% 39% / 0.08) 0%, 
+      hsl(168 40% 50% / 0.15) 100%);
+  }
+
+  .card-gradient-green {
+    background: linear-gradient(135deg, 
+      hsl(142 70% 45% / 0.08) 0%, 
+      hsl(142 60% 50% / 0.15) 100%);
+  }
+
+  .card-gradient-amber {
+    background: linear-gradient(135deg, 
+      hsl(45 80% 50% / 0.08) 0%, 
+      hsl(45 70% 55% / 0.15) 100%);
+  }
+
+  .card-gradient-purple {
+    background: linear-gradient(135deg, 
+      hsl(270 60% 55% / 0.08) 0%, 
+      hsl(270 50% 60% / 0.15) 100%);
+  }
+
+  .card-gradient-rose {
+    background: linear-gradient(135deg, 
+      hsl(350 80% 55% / 0.08) 0%, 
+      hsl(350 70% 60% / 0.15) 100%);
+  }
+
+  /* Dark mode variants */
+  .dark .card-gradient-teal {
+    background: linear-gradient(135deg, 
+      hsl(168 50% 45% / 0.12) 0%, 
+      hsl(168 40% 40% / 0.2) 100%);
+  }
+
+  .dark .card-gradient-green {
+    background: linear-gradient(135deg, 
+      hsl(142 60% 40% / 0.12) 0%, 
+      hsl(142 50% 35% / 0.2) 100%);
+  }
+
+  .dark .card-gradient-amber {
+    background: linear-gradient(135deg, 
+      hsl(45 70% 45% / 0.12) 0%, 
+      hsl(45 60% 40% / 0.2) 100%);
+  }
+
+  .dark .card-gradient-purple {
+    background: linear-gradient(135deg, 
+      hsl(270 50% 50% / 0.12) 0%, 
+      hsl(270 40% 45% / 0.2) 100%);
+  }
+
+  .dark .card-gradient-rose {
+    background: linear-gradient(135deg, 
+      hsl(350 70% 50% / 0.12) 0%, 
+      hsl(350 60% 45% / 0.2) 100%);
+  }
 }

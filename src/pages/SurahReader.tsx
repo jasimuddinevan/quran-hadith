@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Bookmark, Copy, Play, Pause, Loader2, Square } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -29,6 +29,8 @@ interface SurahData {
 
 const SurahReader: React.FC = () => {
   const { surahId } = useParams<{ surahId: string }>();
+  const [searchParams] = useSearchParams();
+  const highlightAyah = searchParams.get('ayah');
   const { t, isEnglish, isBengali } = useLanguage();
   const { addBookmark } = useBookmarks();
   const { toast } = useToast();
@@ -45,6 +47,7 @@ const SurahReader: React.FC = () => {
   const [isPlayingAll, setIsPlayingAll] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playAllRef = useRef<boolean>(false);
+  const hasScrolledToAyah = useRef<boolean>(false);
 
   useEffect(() => {
     const fetchSurah = async () => {
@@ -84,6 +87,7 @@ const SurahReader: React.FC = () => {
 
     if (surahId) {
       fetchSurah();
+      hasScrolledToAyah.current = false;
     }
     
     // Cleanup audio on unmount or surah change
@@ -98,6 +102,22 @@ const SurahReader: React.FC = () => {
       setIsPlayingAll(false);
     };
   }, [surahId, isBengali]);
+
+  // Scroll to highlighted ayah after data loads
+  useEffect(() => {
+    if (highlightAyah && surahArabic && !loading && !hasScrolledToAyah.current) {
+      const ayahNum = parseInt(highlightAyah);
+      if (ayahNum > 0 && ayahNum <= surahArabic.numberOfAyahs) {
+        setTimeout(() => {
+          const element = document.getElementById(`verse-${ayahNum}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            hasScrolledToAyah.current = true;
+          }
+        }, 300);
+      }
+    }
+  }, [highlightAyah, surahArabic, loading]);
 
   const handleCopy = (arabic: string, translation: string, ayahNumber: number) => {
     const text = `${arabic}\n\n${translation}\n\n- ${surahArabic?.englishName} ${ayahNumber}`;
@@ -368,14 +388,15 @@ const SurahReader: React.FC = () => {
                 const translation = surahTranslation?.ayahs[index]?.text || '';
                 const isCurrentlyPlaying = currentlyPlaying === ayah.numberInSurah;
                 const hasAudio = !!audioUrls[ayah.numberInSurah];
+                const isHighlighted = highlightAyah && parseInt(highlightAyah) === ayah.numberInSurah;
                 
                 return (
                   <Card 
                     key={ayah.number}
                     id={`verse-${ayah.numberInSurah}`}
-                    className={`overflow-hidden transition-all duration-300 ${
+                    className={`overflow-hidden transition-all duration-500 ${
                       isCurrentlyPlaying ? 'ring-2 ring-primary shadow-lg' : ''
-                    }`}
+                    } ${isHighlighted ? 'ring-2 ring-amber-500 shadow-lg shadow-amber-500/20 bg-amber-50/50 dark:bg-amber-900/10' : ''}`}
                   >
                     <CardContent className="p-4 md:p-6">
                       {/* Verse Number Badge */}

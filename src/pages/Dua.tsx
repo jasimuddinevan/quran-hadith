@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { HandHeart, Search, Copy, Bookmark, Sun, Moon, Utensils, Plane, Bed, Heart } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -117,8 +118,21 @@ const Dua: React.FC = () => {
   const { t, isEnglish } = useLanguage();
   const { addBookmark } = useBookmarks();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const categoryParam = searchParams.get('category');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+
+  // Set category from URL param on mount
+  useEffect(() => {
+    if (categoryParam) {
+      // Find the matching category by English name
+      const matchingCategory = categories.find(c => c.id === categoryParam);
+      if (matchingCategory) {
+        setSelectedCategory(matchingCategory.id);
+      }
+    }
+  }, [categoryParam]);
 
   const handleCopy = (dua: DuaItem) => {
     const text = `${dua.arabic}\n\n${dua.transliteration}\n\n${isEnglish ? dua.translation : dua.translationBn}\n\n- ${dua.reference}`;

@@ -14,7 +14,7 @@ const FeaturedSurah: React.FC = () => {
         {t('featured.title')}
       </h2>
 
-      <Card className="overflow-hidden bg-gradient-to-br from-primary/5 via-background to-primary/10 border-primary/20">
+      <Card className="overflow-hidden card-gradient-teal border-primary/20">
         <CardContent className="p-6 md:p-10">
           <div className="flex flex-col md:flex-row items-center gap-6 md:gap-10">
             {/* Icon */}

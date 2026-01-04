@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Book, Search, Copy, Bookmark, Loader2, ArrowLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -23,9 +24,21 @@ const Hadith: React.FC = () => {
   const { t, isEnglish, isBengali, language } = useLanguage();
   const { addBookmark } = useBookmarks();
   const { toast } = useToast();
+  const [searchParams] = useSearchParams();
+  const collectionParam = searchParams.get('collection');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
   const [page, setPage] = useState(1);
+
+  // Set collection from URL param on mount
+  useEffect(() => {
+    if (collectionParam) {
+      const matchingCollection = hadithCollections.find(c => c.id === collectionParam);
+      if (matchingCollection) {
+        setSelectedCollection(matchingCollection.id);
+      }
+    }
+  }, [collectionParam]);
 
   // Fetch random hadiths for browse tab - pass language for translation
   const { data: randomHadiths, isLoading: isLoadingRandom, refetch: refetchRandom } = useQuery({

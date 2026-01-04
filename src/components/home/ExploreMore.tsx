@@ -47,7 +47,11 @@ const ExploreMore: React.FC = () => {
       <div className="grid md:grid-cols-3 gap-4 md:gap-6">
         {exploreItems.map((item, index) => (
           <Link key={index} to={item.path}>
-            <Card className="h-full group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer">
+            <Card className={`h-full group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer ${
+              index === 0 ? 'card-gradient-amber border-amber-500/10' : 
+              index === 1 ? 'card-gradient-teal border-primary/10' : 
+              'card-gradient-rose border-rose-500/10'
+            }`}>
               <CardContent className="p-6 md:p-8">
                 <div className={`${item.bgColor} p-4 rounded-2xl inline-block mb-4 group-hover:scale-110 transition-transform`}>
                   <item.icon className={`h-8 w-8 ${item.color}`} />

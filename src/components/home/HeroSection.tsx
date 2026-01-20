@@ -15,112 +15,50 @@ const HeroSection: React.FC = () => {
 
   return (
     <section className="relative overflow-hidden">
-      {/* Elegant warm background */}
+      {/* Elegant light background */}
       <div className="absolute inset-0 hero-elegant" />
       
-      {/* Subtle mandala pattern overlay */}
-      <div className="absolute inset-0 islamic-pattern-enhanced opacity-60" />
+      {/* Subtle Islamic geometric pattern overlay */}
+      <div className="absolute inset-0 islamic-pattern-enhanced" />
       
-      {/* Content wrapper */}
-      <div className="relative container py-8 md:py-14">
-        {/* Decorative Islamic Arch Frame */}
+      {/* Content wrapper with arch frame */}
+      <div className="relative container py-12 md:py-20">
+        {/* Decorative Arch Frame */}
         <div className="relative max-w-4xl mx-auto">
-          {/* Ornate Arch Frame SVG */}
+          {/* Outer arch border - gold */}
           <svg 
-            viewBox="0 0 900 500" 
-            className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-4xl h-auto pointer-events-none"
+            viewBox="0 0 800 400" 
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-auto pointer-events-none"
             preserveAspectRatio="xMidYMin meet"
           >
-            <defs>
-              {/* Gold gradient */}
-              <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="hsl(38 92% 55%)" />
-                <stop offset="50%" stopColor="hsl(38 85% 50%)" />
-                <stop offset="100%" stopColor="hsl(38 80% 45%)" />
-              </linearGradient>
-              
-              {/* Decorative pattern for arch */}
-              <pattern id="archPattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse">
-                <circle cx="10" cy="10" r="1.5" fill="hsl(38 85% 50%)" fillOpacity="0.3" />
-              </pattern>
-            </defs>
-            
-            {/* Outer decorative arch - main frame */}
+            {/* Gold outer arch */}
             <path 
-              d="M80 480 L80 200 Q80 60 450 60 Q820 60 820 200 L820 480" 
+              d="M50 400 L50 180 Q50 50 400 50 Q750 50 750 180 L750 400" 
               fill="none" 
-              stroke="url(#goldGradient)" 
-              strokeWidth="3"
-              className="opacity-70"
+              stroke="hsl(38 92% 50%)" 
+              strokeWidth="2"
+              className="opacity-60"
             />
-            
-            {/* Inner arch with dotted pattern */}
+            {/* Inner subtle arch */}
             <path 
-              d="M120 480 L120 210 Q120 100 450 100 Q780 100 780 210 L780 480" 
+              d="M80 400 L80 190 Q80 80 400 80 Q720 80 720 190 L720 400" 
               fill="none" 
-              stroke="hsl(38 85% 55%)" 
-              strokeWidth="1.5"
-              strokeDasharray="8,4"
-              className="opacity-40"
-            />
-            
-            {/* Innermost elegant arch */}
-            <path 
-              d="M160 480 L160 220 Q160 130 450 130 Q740 130 740 220 L740 480" 
-              fill="none" 
-              stroke="hsl(38 80% 50%)" 
+              stroke="hsl(38 85% 60%)" 
               strokeWidth="1"
-              className="opacity-25"
+              className="opacity-30"
             />
-            
-            {/* Top ornamental circle with star */}
-            <g transform="translate(450, 60)">
-              <circle cx="0" cy="0" r="20" fill="none" stroke="url(#goldGradient)" strokeWidth="2" className="opacity-60" />
-              <circle cx="0" cy="0" r="12" fill="none" stroke="hsl(38 85% 55%)" strokeWidth="1" className="opacity-40" />
-              <circle cx="0" cy="0" r="5" fill="hsl(38 92% 50%)" className="opacity-50" />
-            </g>
-            
-            {/* Left corner ornament */}
-            <g transform="translate(80, 480)">
-              <circle cx="0" cy="0" r="15" fill="none" stroke="url(#goldGradient)" strokeWidth="2" className="opacity-50" />
-              <circle cx="0" cy="0" r="8" fill="none" stroke="hsl(38 85% 55%)" strokeWidth="1" className="opacity-30" />
-              <circle cx="0" cy="0" r="4" fill="hsl(38 92% 50%)" className="opacity-40" />
-            </g>
-            
-            {/* Right corner ornament */}
-            <g transform="translate(820, 480)">
-              <circle cx="0" cy="0" r="15" fill="none" stroke="url(#goldGradient)" strokeWidth="2" className="opacity-50" />
-              <circle cx="0" cy="0" r="8" fill="none" stroke="hsl(38 85% 55%)" strokeWidth="1" className="opacity-30" />
-              <circle cx="0" cy="0" r="4" fill="hsl(38 92% 50%)" className="opacity-40" />
-            </g>
-            
-            {/* Left side decorative elements */}
-            <g className="opacity-40">
-              <path d="M80 300 Q60 300 60 280 Q60 260 80 260" fill="none" stroke="hsl(38 85% 55%)" strokeWidth="1.5" />
-              <path d="M80 350 Q50 350 50 320 Q50 290 80 290" fill="none" stroke="hsl(38 85% 55%)" strokeWidth="1" />
-              <circle cx="50" cy="320" r="4" fill="hsl(38 92% 50%)" fillOpacity="0.5" />
-            </g>
-            
-            {/* Right side decorative elements */}
-            <g className="opacity-40">
-              <path d="M820 300 Q840 300 840 280 Q840 260 820 260" fill="none" stroke="hsl(38 85% 55%)" strokeWidth="1.5" />
-              <path d="M820 350 Q850 350 850 320 Q850 290 820 290" fill="none" stroke="hsl(38 85% 55%)" strokeWidth="1" />
-              <circle cx="850" cy="320" r="4" fill="hsl(38 92% 50%)" fillOpacity="0.5" />
-            </g>
-
-            {/* Mandala-inspired top decoration */}
-            <g transform="translate(450, 35)" className="opacity-30">
-              <path d="M-40 0 L-20 -10 L0 0 L20 -10 L40 0" fill="none" stroke="hsl(38 85% 55%)" strokeWidth="1" />
-              <path d="M-30 5 L0 -5 L30 5" fill="none" stroke="hsl(38 80% 50%)" strokeWidth="0.8" />
-            </g>
+            {/* Decorative corner elements */}
+            <circle cx="50" cy="400" r="6" fill="hsl(38 92% 50%)" className="opacity-40" />
+            <circle cx="750" cy="400" r="6" fill="hsl(38 92% 50%)" className="opacity-40" />
+            <circle cx="400" cy="50" r="8" fill="hsl(38 92% 50%)" className="opacity-50" />
           </svg>
 
           {/* Main content area */}
-          <div className="relative flex flex-col items-center text-center pt-20 pb-12 px-6">
+          <div className="relative flex flex-col items-center text-center pt-16 pb-8 px-4">
             {/* Decorative gold sparkle icon */}
             <div className="mb-6 animate-fade-in">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-gold/25 to-gold-light/15 border-2 border-gold/40 shadow-lg shadow-gold/15">
-                <Sparkles className="h-8 w-8 text-gold" />
+              <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-gradient-to-br from-gold/20 to-gold-light/10 border border-gold/30 shadow-lg shadow-gold/10">
+                <Sparkles className="h-7 w-7 text-gold" />
               </div>
             </div>
 
@@ -135,7 +73,7 @@ const HeroSection: React.FC = () => {
             </p>
             
             {/* AI Subtitle with gold accent */}
-            <p className="text-sm md:text-base text-muted-foreground mb-10 max-w-lg animate-fade-in flex items-center gap-2" style={{ animationDelay: '0.15s' }}>
+            <p className="text-sm md:text-base text-muted-foreground mb-8 max-w-lg animate-fade-in flex items-center gap-2" style={{ animationDelay: '0.15s' }}>
               <Sparkles className="h-4 w-4 text-gold" />
               <span>{t('hero.aiSubtitle')}</span>
             </p>
@@ -155,14 +93,14 @@ const HeroSection: React.FC = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t('hero.search')}
-                  className="w-full pl-12 pr-28 py-6 text-base rounded-full bg-card text-foreground border-2 border-gold/20 shadow-xl shadow-gold/5 focus-visible:ring-2 focus-visible:ring-gold/30 focus-visible:border-gold/40"
+                  className="w-full pl-12 pr-28 py-6 text-base rounded-full bg-card text-foreground border border-border/50 shadow-lg shadow-primary/5 focus-visible:ring-2 focus-visible:ring-primary/30 focus-visible:border-primary/50"
                 />
                 <div className="absolute right-2 flex items-center gap-1">
                   <Button
                     type="button"
                     variant="ghost"
                     size="icon"
-                    className="h-10 w-10 rounded-full text-muted-foreground hover:text-gold hover:bg-gold/10"
+                    className="h-10 w-10 rounded-full text-muted-foreground hover:text-primary hover:bg-accent"
                   >
                     <Mic className="h-5 w-5" />
                   </Button>
@@ -180,12 +118,12 @@ const HeroSection: React.FC = () => {
         </div>
       </div>
 
-      {/* Decorative bottom transition with gold accent line */}
+      {/* Decorative bottom border with gold accent */}
       <div className="absolute bottom-0 left-0 right-0">
-        <div className="h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
-        <svg viewBox="0 0 1440 50" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
+        <div className="h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent" />
+        <svg viewBox="0 0 1440 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-auto">
           <path
-            d="M0 50V25C360 8 720 0 720 0C720 0 1080 8 1440 25V50H0Z"
+            d="M0 40V20C360 5 720 0 720 0C720 0 1080 5 1440 20V40H0Z"
             fill="hsl(var(--background))"
           />
         </svg>

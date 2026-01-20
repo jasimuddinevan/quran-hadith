@@ -46,7 +46,7 @@ const Footer: React.FC = () => {
           </div>
           
           <p className="text-sm text-muted-foreground">
-            © {currentYear} {isEnglish ? 'Quran Insight. All rights reserved.' : 'কুরআন ইনসাইট। সর্বস্বত্ব সংরক্ষিত।'}
+            © {currentYear} {isEnglish ? 'IlmPath. All rights reserved.' : 'ইলমপাথ। সর্বস্বত্ব সংরক্ষিত।'}
           </p>
         </div>
       </div>

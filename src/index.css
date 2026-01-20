@@ -109,16 +109,24 @@
 }
 
 @layer utilities {
-  /* Islamic geometric pattern background - subtle */
+  /* Islamic geometric pattern background - subtle for light backgrounds */
   .islamic-pattern {
-    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234F46E5' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
   }
 
-  /* Enhanced Islamic pattern for hero section */
+  /* Enhanced Islamic pattern for hero section - elegant star pattern */
   .islamic-pattern-enhanced {
     background-image: 
-      url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.1'%3E%3Cpath d='M40 40L20 20L40 0L60 20L40 40ZM40 80L20 60L40 40L60 60L40 80ZM0 40L20 20L40 40L20 60L0 40ZM80 40L60 20L40 40L60 60L80 40Z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E"),
-      url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='20' cy='20' r='3'/%3E%3Ccircle cx='0' cy='20' r='3'/%3E%3Ccircle cx='40' cy='20' r='3'/%3E%3Ccircle cx='20' cy='0' r='3'/%3E%3Ccircle cx='20' cy='40' r='3'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%234F46E5' stroke-opacity='0.06' stroke-width='0.5'%3E%3Cpath d='M50 0L60 40L100 50L60 60L50 100L40 60L0 50L40 40Z'/%3E%3Ccircle cx='50' cy='50' r='15'/%3E%3Ccircle cx='0' cy='0' r='10'/%3E%3Ccircle cx='100' cy='0' r='10'/%3E%3Ccircle cx='0' cy='100' r='10'/%3E%3Ccircle cx='100' cy='100' r='10'/%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  /* Elegant hero background - light with subtle pattern */
+  .hero-elegant {
+    background: linear-gradient(180deg, hsl(250 20% 97%) 0%, hsl(250 15% 95%) 100%);
+  }
+
+  .dark .hero-elegant {
+    background: linear-gradient(180deg, hsl(250 30% 12%) 0%, hsl(250 25% 8%) 100%);
   }
 
   .hero-gradient {

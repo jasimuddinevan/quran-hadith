@@ -21,8 +21,8 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.settings': 'Settings',
     
     // Hero
-    'hero.title': 'Quran Insight',
-    'hero.subtitle': 'For Learning Quran Easily',
+    'hero.title': 'IlmPath',
+    'hero.subtitle': 'Quran & Hadith • Complete Guidance',
     'hero.search': 'Example: What does Quran say about prayer?',
     'hero.aiSubtitle': 'Search in Bengali or English. Get accurate information through AI.',
     
@@ -146,7 +146,7 @@ const translations: Record<Language, Record<string, string>> = {
     'settings.location': 'Location Settings',
     
     // Footer
-    'footer.copyright': '© 2024 Quran Insight. All rights reserved.',
+    'footer.copyright': '© 2024 IlmPath. All rights reserved.',
     'footer.madeWith': 'Made with love for the Ummah',
   },
   bn: {
@@ -159,8 +159,8 @@ const translations: Record<Language, Record<string, string>> = {
     'nav.settings': 'সেটিংস',
     
     // Hero
-    'hero.title': 'কুরআন ইনসাইট',
-    'hero.subtitle': 'সহজে কুরআন শেখার জন্য',
+    'hero.title': 'ইলমপাথ',
+    'hero.subtitle': 'কুরআন ও হাদিস • সম্পূর্ণ গাইডেন্স',
     'hero.search': 'উদাহরণ: নামাজ সম্পর্কে কুরআন কি বলে?',
     'hero.aiSubtitle': 'বাংলা বা ইংরেজিতে সার্চ করুন। এআই এর মাধ্যমে সঠিক তথ্য পান।',
     
@@ -284,7 +284,7 @@ const translations: Record<Language, Record<string, string>> = {
     'settings.location': 'অবস্থান সেটিংস',
     
     // Footer
-    'footer.copyright': '© ২০২৪ কুরআন ইনসাইট। সর্বস্বত্ব সংরক্ষিত।',
+    'footer.copyright': '© ২০২৪ ইলমপাথ। সর্বস্বত্ব সংরক্ষিত।',
     'footer.madeWith': 'উম্মাহর জন্য ভালোবাসায় তৈরি',
   },
 };

@@ -1,33 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Book, Search, Copy, Bookmark, Loader2, ArrowLeft, ChevronRight, RefreshCw } from 'lucide-react';
+import { Book, Search, ArrowLeft, RefreshCw } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useBookmarks } from '@/contexts/BookmarkContext';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { useToast } from '@/hooks/use-toast';
-import { Skeleton } from '@/components/ui/skeleton';
 import { useQuery } from '@tanstack/react-query';
 import { 
   hadithCollections, 
   fetchHadithsByCollection, 
   fetchRandomHadiths,
+  fetchCollectionMetadata,
+  fetchHadithsBySection,
   getCollectionName,
-  type HadithResponse 
 } from '@/lib/hadithApi';
+import HadithCard from '@/components/hadith/HadithCard';
+import CollectionCard from '@/components/hadith/CollectionCard';
+import SectionList from '@/components/hadith/SectionList';
+import HadithSkeleton from '@/components/hadith/HadithSkeleton';
 
 const Hadith: React.FC = () => {
-  const { t, isEnglish, isBengali, language } = useLanguage();
-  const { addBookmark } = useBookmarks();
-  const { toast } = useToast();
+  const { t, isEnglish, language } = useLanguage();
   const [searchParams] = useSearchParams();
   const collectionParam = searchParams.get('collection');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
+  const [selectedSection, setSelectedSection] = useState<{ number: number; name: string } | null>(null);
   const [page, setPage] = useState(1);
 
   // Set collection from URL param on mount
@@ -40,41 +39,41 @@ const Hadith: React.FC = () => {
     }
   }, [collectionParam]);
 
-  // Fetch random hadiths for browse tab - pass language for translation
+  // Fetch random hadiths for browse tab
   const { data: randomHadiths, isLoading: isLoadingRandom, refetch: refetchRandom } = useQuery({
     queryKey: ['randomHadiths', language],
     queryFn: () => fetchRandomHadiths(5, language),
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 5,
   });
 
-  // Fetch hadiths by collection - pass language for translation
+  // Fetch collection metadata (sections/chapters)
+  const { data: collectionMetadata, isLoading: isLoadingMetadata } = useQuery({
+    queryKey: ['collectionMetadata', selectedCollection],
+    queryFn: () => fetchCollectionMetadata(selectedCollection!),
+    enabled: !!selectedCollection && !selectedSection,
+  });
+
+  // Fetch hadiths by section
+  const { data: sectionHadiths, isLoading: isLoadingSectionHadiths } = useQuery({
+    queryKey: ['sectionHadiths', selectedCollection, selectedSection?.number, language],
+    queryFn: () => fetchHadithsBySection(selectedCollection!, selectedSection!.number, language),
+    enabled: !!selectedCollection && !!selectedSection,
+  });
+
+  // Fetch hadiths by collection (paginated, for "All Hadiths" view)
   const { data: collectionData, isLoading: isLoadingCollection } = useQuery({
     queryKey: ['hadithsByCollection', selectedCollection, page, language],
     queryFn: () => fetchHadithsByCollection(selectedCollection!, page, 10, language),
-    enabled: !!selectedCollection,
+    enabled: !!selectedCollection && !selectedSection,
   });
 
-  const handleCopy = (hadith: HadithResponse) => {
-    const text = `${hadith.hadithArabic}\n\n${hadith.hadithEnglish}\n\n- ${getCollectionName(hadith.bookSlug)}`;
-    navigator.clipboard.writeText(text);
-    toast({
-      title: isEnglish ? 'Copied!' : 'কপি হয়েছে!',
-      description: isEnglish ? 'Hadith copied to clipboard' : 'হাদিস ক্লিপবোর্ডে কপি হয়েছে',
-    });
-  };
-
-  const handleBookmark = (hadith: HadithResponse) => {
-    addBookmark({
-      type: 'hadith',
-      title: getCollectionName(hadith.bookSlug, isEnglish ? 'en' : 'bn'),
-      arabic: hadith.hadithArabic,
-      translation: isBengali && hadith.hadithBengali ? hadith.hadithBengali : hadith.hadithEnglish,
-      reference: `Hadith #${hadith.hadithNumber}`,
-    });
-    toast({
-      title: isEnglish ? 'Bookmarked!' : 'বুকমার্ক হয়েছে!',
-      description: isEnglish ? 'Hadith added to bookmarks' : 'হাদিস বুকমার্কে যোগ হয়েছে',
-    });
+  const handleBack = () => {
+    if (selectedSection) {
+      setSelectedSection(null);
+    } else {
+      setSelectedCollection(null);
+      setPage(1);
+    }
   };
 
   const filteredHadiths = (randomHadiths || []).filter((hadith) => {
@@ -82,71 +81,9 @@ const Hadith: React.FC = () => {
     const query = searchQuery.toLowerCase();
     return (
       hadith.hadithEnglish.toLowerCase().includes(query) ||
-      hadith.hadithArabic.includes(query) ||
       (hadith.hadithBengali && hadith.hadithBengali.includes(query))
     );
   });
-
-  const HadithSkeleton = () => (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <Skeleton className="h-5 w-24" />
-          <div className="flex gap-1">
-            <Skeleton className="h-8 w-8" />
-            <Skeleton className="h-8 w-8" />
-          </div>
-        </div>
-        <Skeleton className="h-16 w-full mb-4" />
-        <Skeleton className="h-12 w-full mb-4" />
-        <Skeleton className="h-4 w-48" />
-      </CardContent>
-    </Card>
-  );
-
-  const renderHadithCard = (hadith: HadithResponse) => (
-    <Card key={`${hadith.bookSlug}-${hadith.id}`}>
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <Badge variant="secondary" className="text-xs">
-            {getCollectionName(hadith.bookSlug, isEnglish ? 'en' : 'bn')} #{hadith.hadithNumber}
-          </Badge>
-          <div className="flex gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleCopy(hadith)}
-            >
-              <Copy className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => handleBookmark(hadith)}
-            >
-              <Bookmark className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-
-        {hadith.hadithArabic && (
-          <p className="arabic-text text-xl text-right leading-loose text-foreground mb-4">
-            {hadith.hadithArabic}
-          </p>
-        )}
-
-        <p className="text-muted-foreground leading-relaxed mb-4">
-          {isBengali && hadith.hadithBengali ? hadith.hadithBengali : hadith.hadithEnglish}
-        </p>
-
-        {hadith.chapterTitle && (
-          <div className="text-xs text-muted-foreground border-t border-border pt-4">
-            <span>{hadith.chapterTitle}</span>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-  );
 
   return (
     <Layout>
@@ -164,58 +101,110 @@ const Hadith: React.FC = () => {
           </p>
         </div>
 
-        {/* If collection is selected, show collection hadiths */}
+        {/* If collection is selected */}
         {selectedCollection ? (
           <div>
             <Button
               variant="ghost"
               className="mb-6"
-              onClick={() => {
-                setSelectedCollection(null);
-                setPage(1);
-              }}
+              onClick={handleBack}
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              {isEnglish ? 'Back to Collections' : 'সংকলনে ফিরুন'}
+              {selectedSection 
+                ? (isEnglish ? 'Back to Chapters' : 'অধ্যায়ে ফিরুন')
+                : (isEnglish ? 'Back to Collections' : 'সংকলনে ফিরুন')
+              }
             </Button>
 
-            <h2 className="text-2xl font-semibold mb-6">
+            <h2 className="text-2xl font-semibold mb-2">
               {getCollectionName(selectedCollection, isEnglish ? 'en' : 'bn')}
             </h2>
+            
+            {selectedSection && (
+              <p className="text-muted-foreground mb-6">
+                {isEnglish ? 'Chapter' : 'অধ্যায়'} {selectedSection.number}: {selectedSection.name}
+              </p>
+            )}
 
-            {isLoadingCollection ? (
-              <div className="space-y-4">
-                {[...Array(3)].map((_, i) => (
-                  <HadithSkeleton key={i} />
-                ))}
-              </div>
-            ) : (
-              <>
+            {/* Show section hadiths if section is selected */}
+            {selectedSection ? (
+              isLoadingSectionHadiths ? (
                 <div className="space-y-4">
-                  {collectionData?.hadiths.map(renderHadithCard)}
+                  {[...Array(3)].map((_, i) => (
+                    <HadithSkeleton key={i} />
+                  ))}
                 </div>
+              ) : (
+                <div className="space-y-4">
+                  {sectionHadiths?.map((hadith) => (
+                    <HadithCard key={hadith.id} hadith={hadith} showCollection={false} />
+                  ))}
+                  {sectionHadiths?.length === 0 && (
+                    <div className="text-center py-8 text-muted-foreground">
+                      {isEnglish ? 'No hadiths found in this chapter' : 'এই অধ্যায়ে কোনো হাদিস পাওয়া যায়নি'}
+                    </div>
+                  )}
+                </div>
+              )
+            ) : (
+              /* Show chapters/sections */
+              <Tabs defaultValue="chapters" className="w-full">
+                <TabsList className="grid w-full max-w-md grid-cols-2 mb-6">
+                  <TabsTrigger value="chapters">
+                    {isEnglish ? 'Chapters' : 'অধ্যায়সমূহ'}
+                  </TabsTrigger>
+                  <TabsTrigger value="all">
+                    {isEnglish ? 'All Hadiths' : 'সকল হাদিস'}
+                  </TabsTrigger>
+                </TabsList>
 
-                {/* Pagination */}
-                <div className="flex justify-center gap-4 mt-8">
-                  <Button
-                    variant="outline"
-                    disabled={page === 1}
-                    onClick={() => setPage(p => p - 1)}
-                  >
-                    {isEnglish ? 'Previous' : 'পূর্ববর্তী'}
-                  </Button>
-                  <span className="flex items-center text-muted-foreground">
-                    {isEnglish ? `Page ${page}` : `পৃষ্ঠা ${page}`}
-                  </span>
-                  <Button
-                    variant="outline"
-                    disabled={!collectionData?.hasMore}
-                    onClick={() => setPage(p => p + 1)}
-                  >
-                    {isEnglish ? 'Next' : 'পরবর্তী'}
-                  </Button>
-                </div>
-              </>
+                <TabsContent value="chapters">
+                  <SectionList 
+                    metadata={collectionMetadata || null} 
+                    isLoading={isLoadingMetadata}
+                    onSelectSection={(number, name) => setSelectedSection({ number, name })}
+                  />
+                </TabsContent>
+
+                <TabsContent value="all">
+                  {isLoadingCollection ? (
+                    <div className="space-y-4">
+                      {[...Array(3)].map((_, i) => (
+                        <HadithSkeleton key={i} />
+                      ))}
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-4">
+                        {collectionData?.hadiths.map((hadith) => (
+                          <HadithCard key={hadith.id} hadith={hadith} showCollection={false} />
+                        ))}
+                      </div>
+
+                      {/* Pagination */}
+                      <div className="flex justify-center gap-4 mt-8">
+                        <Button
+                          variant="outline"
+                          disabled={page === 1}
+                          onClick={() => setPage(p => p - 1)}
+                        >
+                          {isEnglish ? 'Previous' : 'পূর্ববর্তী'}
+                        </Button>
+                        <span className="flex items-center text-muted-foreground">
+                          {isEnglish ? `Page ${page}` : `পৃষ্ঠা ${page}`}
+                        </span>
+                        <Button
+                          variant="outline"
+                          disabled={!collectionData?.hasMore}
+                          onClick={() => setPage(p => p + 1)}
+                        >
+                          {isEnglish ? 'Next' : 'পরবর্তী'}
+                        </Button>
+                      </div>
+                    </>
+                  )}
+                </TabsContent>
+              </Tabs>
             )}
           </div>
         ) : (
@@ -233,29 +222,11 @@ const Hadith: React.FC = () => {
               {/* Hadith Collections Grid */}
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {hadithCollections.map((collection) => (
-                  <Card 
+                  <CollectionCard
                     key={collection.id}
-                    className="hover:shadow-md hover:border-primary/30 transition-all cursor-pointer group"
+                    collection={collection}
                     onClick={() => setSelectedCollection(collection.id)}
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="p-2 rounded-lg bg-amber-500/10">
-                          <Book className="h-5 w-5 text-amber-600" />
-                        </div>
-                        <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                      </div>
-                      <p className="arabic-text text-lg text-primary mb-1">
-                        {collection.nameAr}
-                      </p>
-                      <h3 className="font-semibold text-foreground mb-1">
-                        {isEnglish ? collection.name : collection.nameBn}
-                      </h3>
-                      <p className="text-sm text-muted-foreground">
-                        {collection.count.toLocaleString()} {isEnglish ? 'hadiths' : 'হাদিস'}
-                      </p>
-                    </CardContent>
-                  </Card>
+                  />
                 ))}
               </div>
             </TabsContent>
@@ -288,7 +259,9 @@ const Hadith: React.FC = () => {
                 {isLoadingRandom ? (
                   [...Array(3)].map((_, i) => <HadithSkeleton key={i} />)
                 ) : filteredHadiths.length > 0 ? (
-                  filteredHadiths.map(renderHadithCard)
+                  filteredHadiths.map((hadith) => (
+                    <HadithCard key={`${hadith.bookSlug}-${hadith.id}`} hadith={hadith} />
+                  ))
                 ) : (
                   <div className="text-center py-8 text-muted-foreground">
                     {isEnglish ? 'No hadiths found' : 'কোনো হাদিস পাওয়া যায়নি'}

@@ -1,102 +1,88 @@
 
-# Hadith Search Functionality
+
+# Hadith Search Pagination
 
 ## Overview
-Add a comprehensive search feature to the Hadith page that allows users to find hadiths by keyword across all collections, with the ability to filter by specific collection.
+Modify the search functionality to find all matching hadiths and add pagination controls, allowing users to navigate through large result sets efficiently.
 
-## Features
+## Current State
+- Search is limited to 50 results with no pagination
+- All matching is done server-side with early termination at 50 results
+- No way to see results beyond the first 50
 
-### 1. Search UI Enhancement
-- Add a new "Search" tab alongside "Collections" and "Browse" tabs
-- Include a search input with a collection filter dropdown
-- Display search results with highlighting of matched keywords
-- Show loading state while searching large datasets
+## Proposed Changes
 
-### 2. Search Functionality
-- Search across English and Bengali translations
-- Optional: Include Arabic text in search
-- Minimum 3 characters required before searching
-- Debounced search input (300ms delay) to avoid excessive processing
-- Limit results to 50 hadiths for performance
+### 1. Update Search API Function
+Modify `searchHadiths()` in `src/lib/hadithApi.ts`:
+- Remove the 50-result limit during search
+- Find ALL matching hadiths across selected collections
+- Add `page` and `pageSize` parameters
+- Return paginated slice with total count and pagination info
 
-### 3. Collection Filter
-- "All Collections" option to search across Bukhari, Muslim, Tirmidhi, etc.
-- Individual collection filter (e.g., search only in Sahih Bukhari)
-- Display collection name badge on each search result
-
-## User Flow
-
-```text
-User opens Hadith page
-        |
-        v
-Sees 3 tabs: [Collections] [Search] [Browse]
-        |
-        v
-Clicks "Search" tab
-        |
-        v
-Enters keyword (e.g., "prayer" or "নামাজ")
-        |
-        v
-Optionally selects a specific collection
-        |
-        v
-Results load progressively as data fetches
-        |
-        v
-Views matching hadiths with source info
-```
+### 2. Update Search UI with Pagination
+Modify `src/pages/Hadith.tsx`:
+- Add `searchPage` state variable (starting at 1)
+- Reset page to 1 when search query or collection filter changes
+- Add pagination controls (Previous/Next buttons with page indicator)
+- Show total results count and current page range
 
 ## Technical Details
 
 ### API Changes (src/lib/hadithApi.ts)
-1. Add new `searchHadiths()` function:
-   - Accept parameters: query string, collection (optional), language
-   - Load hadith data from specified collection(s)
-   - Filter hadiths where text contains the search query
-   - Return matching hadiths with Arabic text included
-   - Limit to 50 results for performance
 
-2. Modify caching strategy:
-   - Leverage existing `hadithCache` for efficient repeat searches
-   - Pre-load commonly searched collections (Bukhari, Muslim)
+Update the `SearchResult` interface:
+```text
+interface SearchResult {
+  hadiths: HadithResponse[];
+  totalFound: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
+}
+```
+
+Update `searchHadiths()` function:
+- Add parameters: `page: number = 1`, `pageSize: number = 20`
+- Remove the `limit` parameter
+- Search ALL hadiths without early termination
+- Store all matches in memory
+- Return the correct slice based on page/pageSize
+- Calculate and return `totalPages`
 
 ### Page Changes (src/pages/Hadith.tsx)
-1. Add new state variables:
-   - `searchQuery` for the search input value
-   - `searchCollection` for the selected collection filter ("all" or collection ID)
-   - `debouncedQuery` for the debounced search term
 
-2. Add new React Query hook for search:
-   - Key: `['hadithSearch', debouncedQuery, searchCollection, language]`
-   - Enable only when query length >= 3 characters
-   - Call new `searchHadiths()` API function
+1. Add state: `searchPage` (number, default 1)
+2. Reset `searchPage` to 1 when `debouncedSearchQuery` or `searchCollectionFilter` changes
+3. Update React Query key to include `searchPage`
+4. Add pagination UI below search results:
+   - Previous/Next buttons
+   - Current page indicator (e.g., "Page 1 of 5")
+   - Results range (e.g., "Showing 1-20 of 100")
 
-3. Update tabs structure:
-   - Three tabs: Collections, Search, Browse
-   - Search tab contains:
-     - Search input with icon
-     - Collection dropdown (Select component)
-     - Results count indicator
-     - Search results list or empty state
+## User Experience
 
-### UI Components
-1. Search results will reuse existing `HadithCard` component
-2. Add result count badge (e.g., "Found 23 hadiths")
-3. Show helpful empty states:
-   - Before search: "Enter at least 3 characters to search"
-   - No results: "No hadiths found matching your search"
+```text
+User searches "prayer"
+        |
+        v
+"Found 247 hadiths - Showing 1-20"
+        |
+        v
+[Hadith results 1-20]
+        |
+        v
+[Previous] Page 1 of 13 [Next]
+```
 
 ## Implementation Files
 
 | File | Changes |
 |------|---------|
-| `src/lib/hadithApi.ts` | Add `searchHadiths()` function |
-| `src/pages/Hadith.tsx` | Add Search tab, search UI, and query hook |
+| `src/lib/hadithApi.ts` | Update `searchHadiths()` to support pagination |
+| `src/pages/Hadith.tsx` | Add pagination state and UI controls |
 
 ## Performance Considerations
-- Use debouncing (300ms) to prevent excessive API calls while typing
-- Limit search results to 50 hadiths
-- Leverage existing cache to avoid re-fetching data
-- Show skeleton loaders during search
+- Use existing cache to avoid re-fetching data on page changes
+- Keep page size reasonable (20 items per page)
+- React Query will cache results per page for quick navigation
+

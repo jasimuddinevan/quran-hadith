@@ -5,7 +5,7 @@ import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+
 import { duas, duaCategories, getDuasByCategory, type DuaItem } from '@/lib/duaData';
 import DuaCard from '@/components/dua/DuaCard';
 
@@ -75,9 +75,16 @@ const Dua: React.FC = () => {
           </div>
         </div>
 
-        {/* Category Filter - Horizontal Scroll */}
-        <ScrollArea className="w-full whitespace-nowrap mb-8">
-          <div className="flex gap-2 pb-2">
+        {/* Category Filter - Touch Draggable */}
+        <div 
+          className="w-full overflow-x-auto mb-8 scrollbar-hide"
+          style={{ 
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none'
+          }}
+        >
+          <div className="flex gap-2 pb-2 px-1 touch-pan-x">
             {duaCategories.map((category) => {
               const Icon = category.icon;
               const isSelected = selectedCategory === category.id;
@@ -87,7 +94,7 @@ const Dua: React.FC = () => {
                   variant={isSelected ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`gap-2 shrink-0 ${isSelected ? '' : 'hover:bg-muted'}`}
+                  className={`gap-2 shrink-0 select-none ${isSelected ? '' : 'hover:bg-muted'}`}
                 >
                   <Icon className="h-4 w-4" />
                   {isEnglish ? category.label : category.labelBn}
@@ -100,8 +107,7 @@ const Dua: React.FC = () => {
               );
             })}
           </div>
-          <ScrollBar orientation="horizontal" />
-        </ScrollArea>
+        </div>
 
         {/* Category Header */}
         {selectedCategory !== 'all' && selectedCategoryInfo && (

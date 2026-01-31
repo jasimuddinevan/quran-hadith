@@ -1,5 +1,5 @@
-import React from 'react';
-import { Copy, Bookmark, Share2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Copy, Bookmark, Share2, ChevronDown, ChevronUp } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -7,6 +7,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useBookmarks } from '@/contexts/BookmarkContext';
 import { useToast } from '@/hooks/use-toast';
 import { getCollectionName, type HadithResponse } from '@/lib/hadithApi';
+import { cn } from '@/lib/utils';
 
 interface HadithCardProps {
   hadith: HadithResponse;
@@ -17,10 +18,15 @@ const HadithCard: React.FC<HadithCardProps> = ({ hadith, showCollection = true }
   const { isEnglish, isBengali } = useLanguage();
   const { addBookmark } = useBookmarks();
   const { toast } = useToast();
+  const [showFullArabic, setShowFullArabic] = useState(false);
+
+  const hasArabic = hadith.hadithArabic && hadith.hadithArabic.length > 0;
+  const isLongArabic = hasArabic && hadith.hadithArabic.length > 300;
 
   const handleCopy = () => {
     const displayText = isBengali && hadith.hadithBengali ? hadith.hadithBengali : hadith.hadithEnglish;
-    const text = `${displayText}\n\n- ${getCollectionName(hadith.bookSlug, isEnglish ? 'en' : 'bn')} #${hadith.hadithNumber}`;
+    const arabicText = hasArabic ? `${hadith.hadithArabic}\n\n` : '';
+    const text = `${arabicText}${displayText}\n\n- ${getCollectionName(hadith.bookSlug, isEnglish ? 'en' : 'bn')} #${hadith.hadithNumber}`;
     navigator.clipboard.writeText(text);
     toast({
       title: isEnglish ? 'Copied!' : 'কপি হয়েছে!',
@@ -32,7 +38,7 @@ const HadithCard: React.FC<HadithCardProps> = ({ hadith, showCollection = true }
     addBookmark({
       type: 'hadith',
       title: getCollectionName(hadith.bookSlug, isEnglish ? 'en' : 'bn'),
-      arabic: '',
+      arabic: hadith.hadithArabic || '',
       translation: isBengali && hadith.hadithBengali ? hadith.hadithBengali : hadith.hadithEnglish,
       reference: `Hadith #${hadith.hadithNumber}`,
     });
@@ -44,7 +50,8 @@ const HadithCard: React.FC<HadithCardProps> = ({ hadith, showCollection = true }
 
   const handleShare = async () => {
     const displayText = isBengali && hadith.hadithBengali ? hadith.hadithBengali : hadith.hadithEnglish;
-    const text = `${displayText}\n\n- ${getCollectionName(hadith.bookSlug, isEnglish ? 'en' : 'bn')} #${hadith.hadithNumber}`;
+    const arabicText = hasArabic ? `${hadith.hadithArabic}\n\n` : '';
+    const text = `${arabicText}${displayText}\n\n- ${getCollectionName(hadith.bookSlug, isEnglish ? 'en' : 'bn')} #${hadith.hadithNumber}`;
     
     if (navigator.share) {
       try {
@@ -102,10 +109,58 @@ const HadithCard: React.FC<HadithCardProps> = ({ hadith, showCollection = true }
 
         {/* Content */}
         <div className="p-4 space-y-4">
-          {/* Main Text */}
-          <p className="text-foreground leading-relaxed text-[15px]">
-            {isBengali && hadith.hadithBengali ? hadith.hadithBengali : hadith.hadithEnglish}
-          </p>
+          {/* Arabic Text */}
+          {hasArabic && (
+            <div className="relative">
+              <div 
+                className={cn(
+                  "p-4 rounded-lg bg-gradient-to-br from-amber-50/80 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 border border-amber-200/50 dark:border-amber-800/30",
+                  isLongArabic && !showFullArabic && "max-h-32 overflow-hidden"
+                )}
+              >
+                <p className="arabic-text text-xl md:text-2xl text-right leading-[2.2] text-foreground font-medium">
+                  {hadith.hadithArabic}
+                </p>
+              </div>
+              
+              {/* Fade overlay for long text */}
+              {isLongArabic && !showFullArabic && (
+                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-amber-100/90 dark:from-amber-950/90 to-transparent rounded-b-lg" />
+              )}
+              
+              {/* Show more/less button */}
+              {isLongArabic && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="w-full mt-2 text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300"
+                  onClick={() => setShowFullArabic(!showFullArabic)}
+                >
+                  {showFullArabic ? (
+                    <>
+                      <ChevronUp className="h-4 w-4 mr-1" />
+                      {isEnglish ? 'Show less' : 'কম দেখুন'}
+                    </>
+                  ) : (
+                    <>
+                      <ChevronDown className="h-4 w-4 mr-1" />
+                      {isEnglish ? 'Show full Arabic' : 'সম্পূর্ণ আরবি দেখুন'}
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          )}
+
+          {/* Translation */}
+          <div>
+            <p className="text-xs text-muted-foreground mb-2 font-medium uppercase tracking-wide">
+              {isBengali ? 'বাংলা অনুবাদ' : 'Translation'}
+            </p>
+            <p className="text-foreground leading-relaxed text-[15px]">
+              {isBengali && hadith.hadithBengali ? hadith.hadithBengali : hadith.hadithEnglish}
+            </p>
+          </div>
 
           {/* Chapter Info */}
           {hadith.chapterTitle && (

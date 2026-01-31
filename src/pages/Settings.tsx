@@ -169,7 +169,7 @@ const Settings: React.FC = () => {
           <Card>
             <CardContent className="p-6 text-center">
               <h3 className="font-semibold text-foreground mb-2">
-                Quran Insight
+                IlmPath
               </h3>
               <p className="text-sm text-muted-foreground mb-4">
                 {isEnglish 
@@ -178,8 +178,8 @@ const Settings: React.FC = () => {
               </p>
               <p className="text-xs text-muted-foreground">
                 {isEnglish 
-                  ? '© 2024 Quran Insight. All rights reserved.' 
-                  : '© ২০২৪ কুরআন ইনসাইট। সর্বস্বত্ব সংরক্ষিত।'}
+                  ? '© 2025 IlmPath. All rights reserved.' 
+                  : '© ২০২৫ ইলমপাথ। সর্বস্বত্ব সংরক্ষিত।'}
               </p>
             </CardContent>
           </Card>

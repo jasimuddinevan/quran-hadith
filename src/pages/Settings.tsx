@@ -1,7 +1,8 @@
 import React from 'react';
-import { Settings as SettingsIcon, Globe, Bell, MapPin, Moon, Sun } from 'lucide-react';
+import { Settings as SettingsIcon, Globe, Bell, MapPin } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useSettings } from '@/contexts/SettingsContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
@@ -9,7 +10,17 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 
 const Settings: React.FC = () => {
-  const { t, language, setLanguage, isEnglish } = useLanguage();
+  const { t, setLanguage, isEnglish } = useLanguage();
+  const {
+    prayerReminders,
+    dailyVerse,
+    dailyHadith,
+    autoLocation,
+    setPrayerReminders,
+    setDailyVerse,
+    setDailyHadith,
+    setAutoLocation,
+  } = useSettings();
 
   return (
     <Layout>
@@ -76,7 +87,11 @@ const Settings: React.FC = () => {
                       : 'প্রতিটি নামাজের সময়ের আগে নোটিফিকেশন পান'}
                   </p>
                 </div>
-                <Switch id="prayer-reminder" />
+                <Switch 
+                  id="prayer-reminder" 
+                  checked={prayerReminders}
+                  onCheckedChange={setPrayerReminders}
+                />
               </div>
               
               <Separator />
@@ -92,7 +107,11 @@ const Settings: React.FC = () => {
                       : 'প্রতিদিন কুরআনের আয়াত নোটিফিকেশন পান'}
                   </p>
                 </div>
-                <Switch id="daily-verse" />
+                <Switch 
+                  id="daily-verse" 
+                  checked={dailyVerse}
+                  onCheckedChange={setDailyVerse}
+                />
               </div>
               
               <Separator />
@@ -108,7 +127,11 @@ const Settings: React.FC = () => {
                       : 'প্রতিদিন হাদিস নোটিফিকেশন পান'}
                   </p>
                 </div>
-                <Switch id="daily-hadith" />
+                <Switch 
+                  id="daily-hadith" 
+                  checked={dailyHadith}
+                  onCheckedChange={setDailyHadith}
+                />
               </div>
             </CardContent>
           </Card>
@@ -133,7 +156,11 @@ const Settings: React.FC = () => {
                       : 'সঠিক নামাজের সময়ের জন্য জিপিএস ব্যবহার করুন'}
                   </p>
                 </div>
-                <Switch id="auto-location" defaultChecked />
+                <Switch 
+                  id="auto-location" 
+                  checked={autoLocation}
+                  onCheckedChange={setAutoLocation}
+                />
               </div>
             </CardContent>
           </Card>

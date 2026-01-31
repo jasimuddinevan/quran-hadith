@@ -108,6 +108,25 @@
   }
 }
 
+/* Quran word-by-word highlighting */
+.quran-word {
+  cursor: pointer;
+  transition: all 150ms ease;
+  padding: 0.1em 0.2em;
+  border-radius: 0.25rem;
+  display: inline-block;
+}
+
+.quran-word:hover {
+  background-color: hsl(var(--primary) / 0.1);
+}
+
+.quran-word.highlighted {
+  background-color: hsl(var(--primary) / 0.25);
+  color: hsl(var(--primary));
+  transform: scale(1.02);
+}
+
 @layer utilities {
   /* Islamic geometric pattern background - subtle for light backgrounds */
   .islamic-pattern {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Bookmark, Copy, Play, Pause, Loader2, Square } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
@@ -8,23 +8,41 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useToast } from '@/hooks/use-toast';
+import WordPopover, { Word } from '@/components/quran/WordPopover';
 
-interface Ayah {
-  number: number;
-  numberInSurah: number;
-  text: string;
-  translation?: string;
-  audio?: string;
+// Types for Quran Foundation API
+interface VerseWord extends Word {
+  verse_key: string;
 }
 
-interface SurahData {
-  number: number;
-  name: string;
-  englishName: string;
-  englishNameTranslation: string;
-  numberOfAyahs: number;
-  revelationType: string;
-  ayahs: Ayah[];
+interface VerseWithWords {
+  id: number;
+  verse_key: string;
+  verse_number: number;
+  text_uthmani: string;
+  words: Word[];
+  translations: { text: string; resource_id: number }[];
+}
+
+interface AudioTimestamp {
+  verse_key: string;
+  timestamp_from: number;
+  timestamp_to: number;
+  segments: [number, number, number][]; // [word_position, start_ms, end_ms]
+}
+
+interface ChapterInfo {
+  id: number;
+  name_arabic: string;
+  name_simple: string;
+  translated_name: { name: string };
+  verses_count: number;
+  revelation_place: string;
+}
+
+interface HighlightedWord {
+  verseKey: string;
+  position: number;
 }
 
 const SurahReader: React.FC = () => {
@@ -34,14 +52,18 @@ const SurahReader: React.FC = () => {
   const { t, isEnglish, isBengali } = useLanguage();
   const { addBookmark } = useBookmarks();
   const { toast } = useToast();
-  const [surahArabic, setSurahArabic] = useState<SurahData | null>(null);
-  const [surahTranslation, setSurahTranslation] = useState<SurahData | null>(null);
-  const [audioUrls, setAudioUrls] = useState<Record<number, string>>({});
+  
+  // Data state
+  const [chapterInfo, setChapterInfo] = useState<ChapterInfo | null>(null);
+  const [verses, setVerses] = useState<VerseWithWords[]>([]);
+  const [audioTimings, setAudioTimings] = useState<Map<string, AudioTimestamp>>(new Map());
+  const [chapterAudioUrl, setChapterAudioUrl] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
   // Audio state
-  const [currentlyPlaying, setCurrentlyPlaying] = useState<number | null>(null);
+  const [currentlyPlayingVerse, setCurrentlyPlayingVerse] = useState<number | null>(null);
+  const [highlightedWord, setHighlightedWord] = useState<HighlightedWord | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
   const [isPlayingAll, setIsPlayingAll] = useState(false);
@@ -49,36 +71,48 @@ const SurahReader: React.FC = () => {
   const playAllRef = useRef<boolean>(false);
   const hasScrolledToAyah = useRef<boolean>(false);
 
+  // Fetch data from Quran Foundation API
   useEffect(() => {
-    const fetchSurah = async () => {
+    const fetchSurahData = async () => {
       setLoading(true);
       setError(null);
+      
       try {
-        const translationEdition = isBengali ? 'bn.bengali' : 'en.sahih';
-        const [arabicRes, translationRes, audioRes] = await Promise.all([
-          fetch(`https://api.alquran.cloud/v1/surah/${surahId}`),
-          fetch(`https://api.alquran.cloud/v1/surah/${surahId}/${translationEdition}`),
-          fetch(`https://api.alquran.cloud/v1/surah/${surahId}/ar.alafasy`),
+        // Determine translation ID: 131 = English (Clear Quran), 161 = Bengali
+        const translationId = isBengali ? '161' : '131';
+        
+        const [chapterRes, versesRes, audioRes] = await Promise.all([
+          fetch(`https://api.quran.com/api/v4/chapters/${surahId}`),
+          fetch(`https://api.quran.com/api/v4/verses/by_chapter/${surahId}?words=true&translations=${translationId}&word_fields=text_uthmani&per_page=300`),
+          fetch(`https://api.quran.com/api/v4/chapter_recitations/7/${surahId}?segments=true`),
         ]);
 
-        const arabicData = await arabicRes.json();
-        const translationData = await translationRes.json();
+        const chapterData = await chapterRes.json();
+        const versesData = await versesRes.json();
         const audioData = await audioRes.json();
 
-        if (arabicData.code === 200) {
-          setSurahArabic(arabicData.data);
+        if (chapterData.chapter) {
+          setChapterInfo(chapterData.chapter);
         }
-        if (translationData.code === 200) {
-          setSurahTranslation(translationData.data);
+
+        if (versesData.verses) {
+          setVerses(versesData.verses);
         }
-        if (audioData.code === 200 && audioData.data?.ayahs) {
-          const urls: Record<number, string> = {};
-          audioData.data.ayahs.forEach((ayah: { numberInSurah: number; audio: string }) => {
-            urls[ayah.numberInSurah] = ayah.audio;
-          });
-          setAudioUrls(urls);
+
+        if (audioData.audio_file) {
+          setChapterAudioUrl(audioData.audio_file.audio_url);
+          
+          // Build timing map from timestamps
+          const timingMap = new Map<string, AudioTimestamp>();
+          if (audioData.audio_file.verse_timings) {
+            audioData.audio_file.verse_timings.forEach((timing: AudioTimestamp) => {
+              timingMap.set(timing.verse_key, timing);
+            });
+          }
+          setAudioTimings(timingMap);
         }
       } catch (err) {
+        console.error('Failed to fetch surah data:', err);
         setError('Failed to load surah');
       } finally {
         setLoading(false);
@@ -86,28 +120,28 @@ const SurahReader: React.FC = () => {
     };
 
     if (surahId) {
-      fetchSurah();
+      fetchSurahData();
       hasScrolledToAyah.current = false;
     }
     
-    // Cleanup audio on unmount or surah change
     return () => {
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current = null;
       }
       playAllRef.current = false;
-      setCurrentlyPlaying(null);
+      setCurrentlyPlayingVerse(null);
+      setHighlightedWord(null);
       setIsPlaying(false);
       setIsPlayingAll(false);
     };
   }, [surahId, isBengali]);
 
-  // Scroll to highlighted ayah after data loads
+  // Scroll to highlighted ayah
   useEffect(() => {
-    if (highlightAyah && surahArabic && !loading && !hasScrolledToAyah.current) {
+    if (highlightAyah && verses.length > 0 && !loading && !hasScrolledToAyah.current) {
       const ayahNum = parseInt(highlightAyah);
-      if (ayahNum > 0 && ayahNum <= surahArabic.numberOfAyahs) {
+      if (ayahNum > 0) {
         setTimeout(() => {
           const element = document.getElementById(`verse-${ayahNum}`);
           if (element) {
@@ -117,10 +151,50 @@ const SurahReader: React.FC = () => {
         }, 300);
       }
     }
-  }, [highlightAyah, surahArabic, loading]);
+  }, [highlightAyah, verses, loading]);
 
-  const handleCopy = (arabic: string, translation: string, ayahNumber: number) => {
-    const text = `${arabic}\n\n${translation}\n\n- ${surahArabic?.englishName} ${ayahNumber}`;
+  // Audio time update handler for word highlighting
+  const handleTimeUpdate = useCallback(() => {
+    if (!audioRef.current || !isPlaying) return;
+    
+    const currentTimeMs = audioRef.current.currentTime * 1000;
+    
+    // Find which verse and word is currently playing
+    for (const [verseKey, timing] of audioTimings) {
+      if (currentTimeMs >= timing.timestamp_from && currentTimeMs <= timing.timestamp_to) {
+        // Update currently playing verse
+        const verseNum = parseInt(verseKey.split(':')[1]);
+        if (currentlyPlayingVerse !== verseNum) {
+          setCurrentlyPlayingVerse(verseNum);
+          // Scroll verse into view
+          const element = document.getElementById(`verse-${verseNum}`);
+          if (element) {
+            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          }
+        }
+        
+        // Find the current word within segments
+        if (timing.segments) {
+          for (const segment of timing.segments) {
+            const [wordPosition, startMs, endMs] = segment;
+            if (currentTimeMs >= startMs && currentTimeMs <= endMs) {
+              setHighlightedWord({ verseKey, position: wordPosition });
+              return;
+            }
+          }
+        }
+        return;
+      }
+    }
+  }, [audioTimings, currentlyPlayingVerse, isPlaying]);
+
+  const handleCopy = (verse: VerseWithWords) => {
+    const arabicText = verse.words
+      .filter(w => w.char_type_name === 'word')
+      .map(w => w.text_uthmani)
+      .join(' ');
+    const translation = verse.translations[0]?.text || '';
+    const text = `${arabicText}\n\n${translation}\n\n- ${chapterInfo?.name_simple} ${verse.verse_number}`;
     navigator.clipboard.writeText(text);
     toast({
       title: isEnglish ? 'Copied!' : 'কপি হয়েছে!',
@@ -128,13 +202,17 @@ const SurahReader: React.FC = () => {
     });
   };
 
-  const handleBookmark = (ayah: Ayah, translation: string) => {
+  const handleBookmark = (verse: VerseWithWords) => {
+    const arabicText = verse.words
+      .filter(w => w.char_type_name === 'word')
+      .map(w => w.text_uthmani)
+      .join(' ');
     addBookmark({
       type: 'verse',
-      title: surahArabic?.englishName || '',
-      arabic: ayah.text,
-      translation,
-      reference: `${surahArabic?.englishName}:${ayah.numberInSurah}`,
+      title: chapterInfo?.name_simple || '',
+      arabic: arabicText,
+      translation: verse.translations[0]?.text || '',
+      reference: `${chapterInfo?.name_simple}:${verse.verse_number}`,
     });
     toast({
       title: isEnglish ? 'Bookmarked!' : 'বুকমার্ক হয়েছে!',
@@ -142,33 +220,29 @@ const SurahReader: React.FC = () => {
     });
   };
 
-  const playVerse = (ayahNumber: number, autoAdvance: boolean = false) => {
-    const audioUrl = audioUrls[ayahNumber];
-    if (!audioUrl) {
-      if (autoAdvance) {
-        // No more verses, stop play all
-        playAllRef.current = false;
-        setIsPlayingAll(false);
-      }
-      return;
-    }
-
+  const playFromVerse = (verseNumber: number) => {
+    if (!chapterAudioUrl) return;
+    
     // Stop current audio if playing
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
     }
 
-    // Create new audio and play
     setIsBuffering(true);
-    const audio = new Audio(audioUrl);
+    const audio = new Audio(chapterAudioUrl);
     audioRef.current = audio;
-    setCurrentlyPlaying(ayahNumber);
-
-    // Scroll the verse into view
-    const verseElement = document.getElementById(`verse-${ayahNumber}`);
-    if (verseElement) {
-      verseElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    // Get the start time for the verse
+    const verseKey = `${surahId}:${verseNumber}`;
+    const timing = audioTimings.get(verseKey);
+    if (timing) {
+      audio.currentTime = timing.timestamp_from / 1000;
     }
+
+    setCurrentlyPlayingVerse(verseNumber);
+
+    audio.addEventListener('timeupdate', handleTimeUpdate);
 
     audio.oncanplay = () => {
       setIsBuffering(false);
@@ -184,31 +258,23 @@ const SurahReader: React.FC = () => {
     };
 
     audio.onended = () => {
-      // Check if we should auto-advance to next verse
-      if (playAllRef.current && surahArabic) {
-        const nextAyah = ayahNumber + 1;
-        if (nextAyah <= surahArabic.numberOfAyahs) {
-          playVerse(nextAyah, true);
-        } else {
-          // Finished all verses
-          playAllRef.current = false;
-          setIsPlayingAll(false);
-          setCurrentlyPlaying(null);
-          setIsPlaying(false);
-          toast({
-            title: isEnglish ? 'Completed' : 'সম্পন্ন',
-            description: isEnglish ? 'Finished playing all verses' : 'সব আয়াত বাজানো শেষ',
-          });
-        }
-      } else {
-        setCurrentlyPlaying(null);
-        setIsPlaying(false);
+      playAllRef.current = false;
+      setIsPlayingAll(false);
+      setCurrentlyPlayingVerse(null);
+      setHighlightedWord(null);
+      setIsPlaying(false);
+      if (isPlayingAll) {
+        toast({
+          title: isEnglish ? 'Completed' : 'সম্পন্ন',
+          description: isEnglish ? 'Finished playing all verses' : 'সব আয়াত বাজানো শেষ',
+        });
       }
     };
 
     audio.onerror = () => {
       setIsBuffering(false);
-      setCurrentlyPlaying(null);
+      setCurrentlyPlayingVerse(null);
+      setHighlightedWord(null);
       setIsPlaying(false);
       playAllRef.current = false;
       setIsPlayingAll(false);
@@ -221,15 +287,16 @@ const SurahReader: React.FC = () => {
 
     audio.play().catch(() => {
       setIsBuffering(false);
-      setCurrentlyPlaying(null);
+      setCurrentlyPlayingVerse(null);
+      setHighlightedWord(null);
       playAllRef.current = false;
       setIsPlayingAll(false);
     });
   };
 
-  const handlePlayVerse = (ayahNumber: number) => {
+  const handlePlayVerse = (verseNumber: number) => {
     // If clicking on the same verse that's playing, toggle play/pause
-    if (currentlyPlaying === ayahNumber && audioRef.current) {
+    if (currentlyPlayingVerse === verseNumber && audioRef.current) {
       if (isPlaying) {
         audioRef.current.pause();
         setIsPlaying(false);
@@ -244,34 +311,39 @@ const SurahReader: React.FC = () => {
     playAllRef.current = false;
     setIsPlayingAll(false);
     
-    playVerse(ayahNumber);
+    playFromVerse(verseNumber);
   };
 
   const handlePlayAll = () => {
     if (isPlayingAll) {
-      // Stop playing
       handleStopAll();
       return;
     }
 
-    // Start playing from verse 1
     playAllRef.current = true;
     setIsPlayingAll(true);
-    playVerse(1, true);
+    playFromVerse(1);
   };
 
   const handleStopAll = () => {
     if (audioRef.current) {
       audioRef.current.pause();
+      audioRef.current.removeEventListener('timeupdate', handleTimeUpdate);
       audioRef.current = null;
     }
     playAllRef.current = false;
     setIsPlayingAll(false);
-    setCurrentlyPlaying(null);
+    setCurrentlyPlayingVerse(null);
+    setHighlightedWord(null);
     setIsPlaying(false);
   };
 
   const surahNumber = parseInt(surahId || '1');
+
+  // Helper to check if a word is highlighted
+  const isWordHighlighted = (verseKey: string, wordPosition: number): boolean => {
+    return highlightedWord?.verseKey === verseKey && highlightedWord?.position === wordPosition;
+  };
 
   return (
     <Layout>
@@ -325,19 +397,19 @@ const SurahReader: React.FC = () => {
         )}
 
         {/* Surah Content */}
-        {!loading && !error && surahArabic && (
+        {!loading && !error && chapterInfo && (
           <>
             {/* Surah Header */}
             <Card className="mb-6 overflow-hidden">
               <div className="bg-primary/10 p-6 text-center">
                 <p className="arabic-text text-4xl text-primary mb-2">
-                  {surahArabic.name}
+                  {chapterInfo.name_arabic}
                 </p>
                 <h1 className="text-2xl font-bold text-foreground mb-1">
-                  {surahArabic.englishName}
+                  {chapterInfo.name_simple}
                 </h1>
                 <p className="text-muted-foreground mb-4">
-                  {surahArabic.englishNameTranslation} • {surahArabic.numberOfAyahs} {t('quran.verses')}
+                  {chapterInfo.translated_name.name} • {chapterInfo.verses_count} {t('quran.verses')}
                 </p>
                 
                 {/* Play All Button */}
@@ -346,6 +418,7 @@ const SurahReader: React.FC = () => {
                     onClick={handlePlayAll}
                     variant={isPlayingAll ? "destructive" : "default"}
                     className="gap-2"
+                    disabled={!chapterAudioUrl}
                   >
                     {isPlayingAll ? (
                       <>
@@ -359,9 +432,9 @@ const SurahReader: React.FC = () => {
                       </>
                     )}
                   </Button>
-                  {isPlayingAll && currentlyPlaying && (
+                  {isPlayingAll && currentlyPlayingVerse && (
                     <span className="text-sm text-muted-foreground flex items-center">
-                      {isEnglish ? 'Playing verse' : 'বাজছে আয়াত'} {currentlyPlaying}/{surahArabic.numberOfAyahs}
+                      {isEnglish ? 'Playing verse' : 'বাজছে আয়াত'} {currentlyPlayingVerse}/{chapterInfo.verses_count}
                     </span>
                   )}
                 </div>
@@ -384,16 +457,14 @@ const SurahReader: React.FC = () => {
 
             {/* Verses */}
             <div className="space-y-4">
-              {surahArabic.ayahs.map((ayah, index) => {
-                const translation = surahTranslation?.ayahs[index]?.text || '';
-                const isCurrentlyPlaying = currentlyPlaying === ayah.numberInSurah;
-                const hasAudio = !!audioUrls[ayah.numberInSurah];
-                const isHighlighted = highlightAyah && parseInt(highlightAyah) === ayah.numberInSurah;
+              {verses.map((verse) => {
+                const isCurrentlyPlaying = currentlyPlayingVerse === verse.verse_number;
+                const isHighlighted = highlightAyah && parseInt(highlightAyah) === verse.verse_number;
                 
                 return (
                   <Card 
-                    key={ayah.number}
-                    id={`verse-${ayah.numberInSurah}`}
+                    key={verse.id}
+                    id={`verse-${verse.verse_number}`}
                     className={`overflow-hidden transition-all duration-500 ${
                       isCurrentlyPlaying ? 'ring-2 ring-primary shadow-lg' : ''
                     } ${isHighlighted ? 'ring-2 ring-amber-500 shadow-lg shadow-amber-500/20 bg-amber-50/50 dark:bg-amber-900/10' : ''}`}
@@ -403,15 +474,15 @@ const SurahReader: React.FC = () => {
                       <div className="flex justify-between items-start mb-4">
                         <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
                           <span className="text-sm font-bold text-primary">
-                            {ayah.numberInSurah}
+                            {verse.verse_number}
                           </span>
                         </div>
                         <div className="flex gap-1">
-                          {hasAudio && (
+                          {chapterAudioUrl && (
                             <Button
                               variant="ghost"
                               size="icon"
-                              onClick={() => handlePlayVerse(ayah.numberInSurah)}
+                              onClick={() => handlePlayVerse(verse.verse_number)}
                               className={isCurrentlyPlaying ? 'text-primary' : ''}
                               title={isEnglish ? (isCurrentlyPlaying && isPlaying ? 'Pause' : 'Play') : (isCurrentlyPlaying && isPlaying ? 'বিরতি' : 'বাজান')}
                             >
@@ -427,7 +498,7 @@ const SurahReader: React.FC = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleCopy(ayah.text, translation, ayah.numberInSurah)}
+                            onClick={() => handleCopy(verse)}
                             title={t('common.copy')}
                           >
                             <Copy className="h-4 w-4" />
@@ -435,7 +506,7 @@ const SurahReader: React.FC = () => {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleBookmark(ayah, translation)}
+                            onClick={() => handleBookmark(verse)}
                             title={t('common.bookmark')}
                           >
                             <Bookmark className="h-4 w-4" />
@@ -443,15 +514,24 @@ const SurahReader: React.FC = () => {
                         </div>
                       </div>
 
-                      {/* Arabic Text */}
-                      <p className="arabic-text text-2xl md:text-3xl text-right leading-[2.5] text-foreground mb-4">
-                        {ayah.text}
-                      </p>
+                      {/* Arabic Text - Word by Word */}
+                      <div className="arabic-text text-2xl md:text-3xl text-right leading-[2.5] text-foreground mb-4 flex flex-wrap justify-end gap-1" dir="rtl">
+                        {verse.words.map((word, idx) => (
+                          <WordPopover
+                            key={`${verse.verse_key}-${word.position}-${idx}`}
+                            word={word}
+                            isHighlighted={isWordHighlighted(verse.verse_key, word.position)}
+                          >
+                            {word.text_uthmani}
+                          </WordPopover>
+                        ))}
+                      </div>
 
                       {/* Translation */}
-                      <p className="text-muted-foreground leading-relaxed border-t border-border pt-4">
-                        {translation}
-                      </p>
+                      <p 
+                        className="text-muted-foreground leading-relaxed border-t border-border pt-4"
+                        dangerouslySetInnerHTML={{ __html: verse.translations[0]?.text || '' }}
+                      />
                     </CardContent>
                   </Card>
                 );

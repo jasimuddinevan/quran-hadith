@@ -35,6 +35,13 @@ const API_BASE = 'https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1';
 
 // Cache for loaded hadith data
 const hadithCache: Map<string, any[]> = new Map();
+const metadataCache: Map<string, any> = new Map();
+
+export interface CollectionMetadata {
+  name: string;
+  sections: Record<string, string>;
+  section_details: Record<string, { hadithnumber_first: number; hadithnumber_last: number }>;
+}
 
 async function loadHadithData(collection: string, language: 'en' | 'bn' = 'en'): Promise<any[]> {
   const cacheKey = `${language}-${collection}`;
@@ -54,6 +61,12 @@ async function loadHadithData(collection: string, language: 'en' | 'bn' = 'en'):
     
     const data = await response.json();
     const hadiths = data.hadiths || [];
+    
+    // Store metadata
+    if (data.metadata) {
+      metadataCache.set(collection, data.metadata);
+    }
+    
     hadithCache.set(cacheKey, hadiths);
     return hadiths;
   } catch (error) {
@@ -66,12 +79,69 @@ async function loadHadithData(collection: string, language: 'en' | 'bn' = 'en'):
       
       const data = await fallbackResponse.json();
       const hadiths = data.hadiths || [];
+      
+      if (data.metadata) {
+        metadataCache.set(collection, data.metadata);
+      }
+      
       hadithCache.set(cacheKey, hadiths);
       return hadiths;
     } catch (fallbackError) {
       console.error('Fallback also failed:', fallbackError);
       return [];
     }
+  }
+}
+
+export async function fetchCollectionMetadata(collection: string): Promise<CollectionMetadata | null> {
+  if (metadataCache.has(collection)) {
+    return metadataCache.get(collection)!;
+  }
+  
+  // Load data to populate metadata cache
+  await loadHadithData(collection, 'en');
+  return metadataCache.get(collection) || null;
+}
+
+export async function fetchHadithsBySection(
+  collection: string,
+  sectionNumber: number,
+  language: 'en' | 'bn' = 'en'
+): Promise<HadithResponse[]> {
+  try {
+    const allHadiths = await loadHadithData(collection, language);
+    const otherLang = language === 'bn' ? 'en' : 'bn';
+    const otherHadiths = await loadHadithData(collection, otherLang);
+    const metadata = await fetchCollectionMetadata(collection);
+    
+    if (!metadata) return [];
+    
+    const sectionDetails = metadata.section_details[String(sectionNumber)];
+    if (!sectionDetails) return [];
+    
+    const sectionHadiths = allHadiths.filter((h: any) => 
+      h.hadithnumber >= sectionDetails.hadithnumber_first && 
+      h.hadithnumber <= sectionDetails.hadithnumber_last
+    );
+    
+    return sectionHadiths.map((hadith: any) => {
+      const otherHadith = otherHadiths.find((h: any) => h.hadithnumber === hadith.hadithnumber);
+      
+      return {
+        id: hadith.hadithnumber,
+        hadithNumber: String(hadith.hadithnumber),
+        hadithArabic: hadith.text || '',
+        hadithEnglish: language === 'en' ? hadith.text : (otherHadith?.text || hadith.text),
+        hadithBengali: language === 'bn' ? hadith.text : (otherHadith?.text || ''),
+        bookSlug: collection,
+        chapterNumber: String(sectionNumber),
+        chapterTitle: metadata.sections[String(sectionNumber)] || '',
+        narrator: '',
+      };
+    });
+  } catch (error) {
+    console.error('Error fetching hadiths by section:', error);
+    return [];
   }
 }
 

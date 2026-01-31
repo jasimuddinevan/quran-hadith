@@ -43,14 +43,14 @@ export interface CollectionMetadata {
   section_details: Record<string, { hadithnumber_first: number; hadithnumber_last: number }>;
 }
 
-async function loadHadithData(collection: string, language: 'en' | 'bn' = 'en'): Promise<any[]> {
+async function loadHadithData(collection: string, language: 'en' | 'bn' | 'ar' = 'en'): Promise<any[]> {
   const cacheKey = `${language}-${collection}`;
   
   if (hadithCache.has(cacheKey)) {
     return hadithCache.get(cacheKey)!;
   }
 
-  const langPrefix = language === 'bn' ? 'ben' : 'eng';
+  const langPrefix = language === 'bn' ? 'ben' : language === 'ar' ? 'ara' : 'eng';
   const collectionInfo = hadithCollections.find(c => c.id === collection);
   const apiId = collectionInfo?.apiId || collection;
 
@@ -109,10 +109,13 @@ export async function fetchHadithsBySection(
   language: 'en' | 'bn' = 'en'
 ): Promise<HadithResponse[]> {
   try {
-    const allHadiths = await loadHadithData(collection, language);
-    const otherLang = language === 'bn' ? 'en' : 'bn';
-    const otherHadiths = await loadHadithData(collection, otherLang);
-    const metadata = await fetchCollectionMetadata(collection);
+    // Fetch all three languages in parallel
+    const [allHadiths, otherHadiths, arabicHadiths, metadata] = await Promise.all([
+      loadHadithData(collection, language),
+      loadHadithData(collection, language === 'bn' ? 'en' : 'bn'),
+      loadHadithData(collection, 'ar'),
+      fetchCollectionMetadata(collection)
+    ]);
     
     if (!metadata) return [];
     
@@ -126,11 +129,12 @@ export async function fetchHadithsBySection(
     
     return sectionHadiths.map((hadith: any) => {
       const otherHadith = otherHadiths.find((h: any) => h.hadithnumber === hadith.hadithnumber);
+      const arabicHadith = arabicHadiths.find((h: any) => h.hadithnumber === hadith.hadithnumber);
       
       return {
         id: hadith.hadithnumber,
         hadithNumber: String(hadith.hadithnumber),
-        hadithArabic: hadith.text || '',
+        hadithArabic: arabicHadith?.text || '',
         hadithEnglish: language === 'en' ? hadith.text : (otherHadith?.text || hadith.text),
         hadithBengali: language === 'bn' ? hadith.text : (otherHadith?.text || ''),
         bookSlug: collection,
@@ -185,11 +189,12 @@ export async function fetchHadithsByCollection(
   language: 'en' | 'bn' = 'en'
 ): Promise<{ hadiths: HadithResponse[]; hasMore: boolean }> {
   try {
-    const allHadiths = await loadHadithData(collection, language);
-    
-    // Also load other language for bilingual display
-    const otherLang = language === 'bn' ? 'en' : 'bn';
-    const otherHadiths = await loadHadithData(collection, otherLang);
+    // Fetch all three languages in parallel
+    const [allHadiths, otherHadiths, arabicHadiths] = await Promise.all([
+      loadHadithData(collection, language),
+      loadHadithData(collection, language === 'bn' ? 'en' : 'bn'),
+      loadHadithData(collection, 'ar')
+    ]);
     
     const startIndex = (page - 1) * limit;
     const endIndex = startIndex + limit;
@@ -197,11 +202,12 @@ export async function fetchHadithsByCollection(
     
     const hadiths: HadithResponse[] = paginatedHadiths.map((hadith: any, index: number) => {
       const otherHadith = otherHadiths.find((h: any) => h.hadithnumber === hadith.hadithnumber) || otherHadiths[startIndex + index];
+      const arabicHadith = arabicHadiths.find((h: any) => h.hadithnumber === hadith.hadithnumber) || arabicHadiths[startIndex + index];
       
       return {
         id: hadith.hadithnumber || startIndex + index + 1,
         hadithNumber: String(hadith.hadithnumber || startIndex + index + 1),
-        hadithArabic: '',
+        hadithArabic: arabicHadith?.text || '',
         hadithEnglish: language === 'en' ? hadith.text : (otherHadith?.text || hadith.text),
         hadithBengali: language === 'bn' ? hadith.text : (otherHadith?.text || ''),
         bookSlug: collection,
@@ -229,19 +235,23 @@ export async function fetchRandomHadiths(count: number = 5, language: 'en' | 'bn
     const collection = collections[i % collections.length];
     
     try {
-      const allHadiths = await loadHadithData(collection, language);
-      const otherLang = language === 'bn' ? 'en' : 'bn';
-      const otherHadiths = await loadHadithData(collection, otherLang);
+      // Fetch all three languages in parallel
+      const [allHadiths, otherHadiths, arabicHadiths] = await Promise.all([
+        loadHadithData(collection, language),
+        loadHadithData(collection, language === 'bn' ? 'en' : 'bn'),
+        loadHadithData(collection, 'ar')
+      ]);
       
       if (allHadiths.length > 0) {
         const randomIndex = Math.floor(Math.random() * Math.min(allHadiths.length, 500));
         const hadith = allHadiths[randomIndex];
         const otherHadith = otherHadiths.find((h: any) => h.hadithnumber === hadith.hadithnumber) || otherHadiths[randomIndex];
+        const arabicHadith = arabicHadiths.find((h: any) => h.hadithnumber === hadith.hadithnumber) || arabicHadiths[randomIndex];
         
         hadiths.push({
           id: hadith.hadithnumber || randomIndex + 1,
           hadithNumber: String(hadith.hadithnumber || randomIndex + 1),
-          hadithArabic: '',
+          hadithArabic: arabicHadith?.text || '',
           hadithEnglish: language === 'en' ? hadith.text : (otherHadith?.text || hadith.text),
           hadithBengali: language === 'bn' ? hadith.text : (otherHadith?.text || ''),
           bookSlug: collection,

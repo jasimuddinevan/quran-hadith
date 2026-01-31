@@ -277,55 +277,64 @@ export function getCollectionName(id: string, language: 'en' | 'bn' = 'en'): str
 export interface SearchResult {
   hadiths: HadithResponse[];
   totalFound: number;
+  page: number;
+  pageSize: number;
+  totalPages: number;
 }
+
+// Cache for search results to avoid re-searching on page changes
+const searchResultsCache: Map<string, HadithResponse[]> = new Map();
 
 export async function searchHadiths(
   query: string,
   collectionId: string | 'all' = 'all',
   language: 'en' | 'bn' = 'en',
-  limit: number = 50
+  page: number = 1,
+  pageSize: number = 20
 ): Promise<SearchResult> {
   if (query.length < 3) {
-    return { hadiths: [], totalFound: 0 };
+    return { hadiths: [], totalFound: 0, page: 1, pageSize, totalPages: 0 };
   }
 
-  const lowerQuery = query.toLowerCase();
-  const collectionsToSearch = collectionId === 'all' 
-    ? hadithCollections.map(c => c.id)
-    : [collectionId];
+  const cacheKey = `${query.toLowerCase()}-${collectionId}-${language}`;
+  
+  // Check if we have cached results for this search
+  let allResults = searchResultsCache.get(cacheKey);
+  
+  if (!allResults) {
+    // Perform the full search
+    const lowerQuery = query.toLowerCase();
+    const collectionsToSearch = collectionId === 'all' 
+      ? hadithCollections.map(c => c.id)
+      : [collectionId];
 
-  const results: HadithResponse[] = [];
-  let totalFound = 0;
+    allResults = [];
 
-  for (const collection of collectionsToSearch) {
-    if (results.length >= limit) break;
+    for (const collection of collectionsToSearch) {
+      try {
+        // Fetch all three languages in parallel
+        const [primaryHadiths, otherHadiths, arabicHadiths] = await Promise.all([
+          loadHadithData(collection, language),
+          loadHadithData(collection, language === 'bn' ? 'en' : 'bn'),
+          loadHadithData(collection, 'ar')
+        ]);
 
-    try {
-      // Fetch all three languages in parallel
-      const [primaryHadiths, otherHadiths, arabicHadiths] = await Promise.all([
-        loadHadithData(collection, language),
-        loadHadithData(collection, language === 'bn' ? 'en' : 'bn'),
-        loadHadithData(collection, 'ar')
-      ]);
+        for (let i = 0; i < primaryHadiths.length; i++) {
+          const hadith = primaryHadiths[i];
+          const otherHadith = otherHadiths.find((h: any) => h.hadithnumber === hadith.hadithnumber) || otherHadiths[i];
+          const arabicHadith = arabicHadiths.find((h: any) => h.hadithnumber === hadith.hadithnumber) || arabicHadiths[i];
 
-      for (let i = 0; i < primaryHadiths.length && results.length < limit; i++) {
-        const hadith = primaryHadiths[i];
-        const otherHadith = otherHadiths.find((h: any) => h.hadithnumber === hadith.hadithnumber) || otherHadiths[i];
-        const arabicHadith = arabicHadiths.find((h: any) => h.hadithnumber === hadith.hadithnumber) || arabicHadiths[i];
+          const primaryText = hadith.text?.toLowerCase() || '';
+          const otherText = otherHadith?.text?.toLowerCase() || '';
+          const arabicText = arabicHadith?.text || '';
 
-        const primaryText = hadith.text?.toLowerCase() || '';
-        const otherText = otherHadith?.text?.toLowerCase() || '';
-        const arabicText = arabicHadith?.text || '';
-
-        // Search in all available texts
-        if (
-          primaryText.includes(lowerQuery) ||
-          otherText.includes(lowerQuery) ||
-          arabicText.includes(query) // Arabic is case-sensitive
-        ) {
-          totalFound++;
-          if (results.length < limit) {
-            results.push({
+          // Search in all available texts
+          if (
+            primaryText.includes(lowerQuery) ||
+            otherText.includes(lowerQuery) ||
+            arabicText.includes(query) // Arabic is case-sensitive
+          ) {
+            allResults.push({
               id: hadith.hadithnumber || i + 1,
               hadithNumber: String(hadith.hadithnumber || i + 1),
               hadithArabic: arabicHadith?.text || '',
@@ -338,11 +347,26 @@ export async function searchHadiths(
             });
           }
         }
+      } catch (error) {
+        console.error(`Error searching collection ${collection}:`, error);
       }
-    } catch (error) {
-      console.error(`Error searching collection ${collection}:`, error);
     }
+
+    // Cache the results
+    searchResultsCache.set(cacheKey, allResults);
   }
 
-  return { hadiths: results, totalFound };
+  const totalFound = allResults.length;
+  const totalPages = Math.ceil(totalFound / pageSize);
+  const startIndex = (page - 1) * pageSize;
+  const endIndex = startIndex + pageSize;
+  const paginatedHadiths = allResults.slice(startIndex, endIndex);
+
+  return { 
+    hadiths: paginatedHadiths, 
+    totalFound, 
+    page, 
+    pageSize, 
+    totalPages 
+  };
 }

@@ -51,7 +51,13 @@ const Hadith: React.FC = () => {
   // Search-specific state
   const [searchInputValue, setSearchInputValue] = useState('');
   const [searchCollectionFilter, setSearchCollectionFilter] = useState<string>('all');
+  const [searchPage, setSearchPage] = useState(1);
   const debouncedSearchQuery = useDebounce(searchInputValue, 300);
+
+  // Reset search page when query or collection filter changes
+  useEffect(() => {
+    setSearchPage(1);
+  }, [debouncedSearchQuery, searchCollectionFilter]);
 
   // Set collection from URL param on mount
   useEffect(() => {
@@ -72,8 +78,8 @@ const Hadith: React.FC = () => {
 
   // Search hadiths query
   const { data: searchResults, isLoading: isSearching } = useQuery({
-    queryKey: ['hadithSearch', debouncedSearchQuery, searchCollectionFilter, language],
-    queryFn: () => searchHadiths(debouncedSearchQuery, searchCollectionFilter, language),
+    queryKey: ['hadithSearch', debouncedSearchQuery, searchCollectionFilter, searchPage, language],
+    queryFn: () => searchHadiths(debouncedSearchQuery, searchCollectionFilter, language, searchPage, 20),
     enabled: debouncedSearchQuery.length >= 3,
     staleTime: 1000 * 60 * 5,
   });
@@ -304,8 +310,8 @@ const Hadith: React.FC = () => {
                 {searchResults && debouncedSearchQuery.length >= 3 && (
                   <p className="text-sm text-muted-foreground text-center">
                     {isEnglish 
-                      ? `Found ${searchResults.totalFound} hadith${searchResults.totalFound !== 1 ? 's' : ''}${searchResults.totalFound > 50 ? ' (showing first 50)' : ''}`
-                      : `${searchResults.totalFound}টি হাদিস পাওয়া গেছে${searchResults.totalFound > 50 ? ' (প্রথম ৫০টি দেখানো হচ্ছে)' : ''}`
+                      ? `Found ${searchResults.totalFound} hadith${searchResults.totalFound !== 1 ? 's' : ''} - Showing ${((searchResults.page - 1) * searchResults.pageSize) + 1}-${Math.min(searchResults.page * searchResults.pageSize, searchResults.totalFound)}`
+                      : `${searchResults.totalFound}টি হাদিস পাওয়া গেছে - ${((searchResults.page - 1) * searchResults.pageSize) + 1}-${Math.min(searchResults.page * searchResults.pageSize, searchResults.totalFound)} দেখানো হচ্ছে`
                     }
                   </p>
                 )}
@@ -317,9 +323,37 @@ const Hadith: React.FC = () => {
                   [...Array(3)].map((_, i) => <HadithSkeleton key={i} />)
                 ) : debouncedSearchQuery.length >= 3 && searchResults ? (
                   searchResults.hadiths.length > 0 ? (
-                    searchResults.hadiths.map((hadith) => (
-                      <HadithCard key={`${hadith.bookSlug}-${hadith.id}`} hadith={hadith} />
-                    ))
+                    <>
+                      {searchResults.hadiths.map((hadith) => (
+                        <HadithCard key={`${hadith.bookSlug}-${hadith.id}`} hadith={hadith} />
+                      ))}
+                      
+                      {/* Pagination Controls */}
+                      {searchResults.totalPages > 1 && (
+                        <div className="flex justify-center items-center gap-4 mt-8 pt-4 border-t">
+                          <Button
+                            variant="outline"
+                            disabled={searchPage === 1}
+                            onClick={() => setSearchPage(p => p - 1)}
+                          >
+                            {isEnglish ? 'Previous' : 'পূর্ববর্তী'}
+                          </Button>
+                          <span className="text-sm text-muted-foreground">
+                            {isEnglish 
+                              ? `Page ${searchResults.page} of ${searchResults.totalPages}`
+                              : `পৃষ্ঠা ${searchResults.page} / ${searchResults.totalPages}`
+                            }
+                          </span>
+                          <Button
+                            variant="outline"
+                            disabled={searchPage >= searchResults.totalPages}
+                            onClick={() => setSearchPage(p => p + 1)}
+                          >
+                            {isEnglish ? 'Next' : 'পরবর্তী'}
+                          </Button>
+                        </div>
+                      )}
+                    </>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       {isEnglish ? 'No hadiths found matching your search' : 'আপনার অনুসন্ধানের সাথে মিলে যায় এমন কোনো হাদিস পাওয়া যায়নি'}

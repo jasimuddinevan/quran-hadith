@@ -265,13 +265,13 @@ const TodayContent: React.FC = () => {
       ? (content.reference || content.source || content.category || '') 
       : (content.referenceBn || content.sourceBn || content.categoryBn || '');
     
-    const shareText = `${text}\n\n${translation}\n\n- ${ref}\n\nShared from Quran Insight`;
+    const shareText = `${text}\n\n${translation}\n\n- ${ref}\n\nShared from IlmPath`;
 
     if (navigator.share) {
       try {
         await navigator.share({
           text: shareText,
-          title: 'Quran Insight',
+          title: 'IlmPath',
         });
       } catch (err) {
         // User cancelled or error

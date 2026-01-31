@@ -273,3 +273,76 @@ export function getCollectionName(id: string, language: 'en' | 'bn' = 'en'): str
   if (!collection) return id;
   return language === 'bn' ? collection.nameBn : collection.name;
 }
+
+export interface SearchResult {
+  hadiths: HadithResponse[];
+  totalFound: number;
+}
+
+export async function searchHadiths(
+  query: string,
+  collectionId: string | 'all' = 'all',
+  language: 'en' | 'bn' = 'en',
+  limit: number = 50
+): Promise<SearchResult> {
+  if (query.length < 3) {
+    return { hadiths: [], totalFound: 0 };
+  }
+
+  const lowerQuery = query.toLowerCase();
+  const collectionsToSearch = collectionId === 'all' 
+    ? hadithCollections.map(c => c.id)
+    : [collectionId];
+
+  const results: HadithResponse[] = [];
+  let totalFound = 0;
+
+  for (const collection of collectionsToSearch) {
+    if (results.length >= limit) break;
+
+    try {
+      // Fetch all three languages in parallel
+      const [primaryHadiths, otherHadiths, arabicHadiths] = await Promise.all([
+        loadHadithData(collection, language),
+        loadHadithData(collection, language === 'bn' ? 'en' : 'bn'),
+        loadHadithData(collection, 'ar')
+      ]);
+
+      for (let i = 0; i < primaryHadiths.length && results.length < limit; i++) {
+        const hadith = primaryHadiths[i];
+        const otherHadith = otherHadiths.find((h: any) => h.hadithnumber === hadith.hadithnumber) || otherHadiths[i];
+        const arabicHadith = arabicHadiths.find((h: any) => h.hadithnumber === hadith.hadithnumber) || arabicHadiths[i];
+
+        const primaryText = hadith.text?.toLowerCase() || '';
+        const otherText = otherHadith?.text?.toLowerCase() || '';
+        const arabicText = arabicHadith?.text || '';
+
+        // Search in all available texts
+        if (
+          primaryText.includes(lowerQuery) ||
+          otherText.includes(lowerQuery) ||
+          arabicText.includes(query) // Arabic is case-sensitive
+        ) {
+          totalFound++;
+          if (results.length < limit) {
+            results.push({
+              id: hadith.hadithnumber || i + 1,
+              hadithNumber: String(hadith.hadithnumber || i + 1),
+              hadithArabic: arabicHadith?.text || '',
+              hadithEnglish: language === 'en' ? hadith.text : (otherHadith?.text || hadith.text),
+              hadithBengali: language === 'bn' ? hadith.text : (otherHadith?.text || ''),
+              bookSlug: collection,
+              chapterNumber: hadith.reference?.book || '',
+              chapterTitle: '',
+              narrator: '',
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error(`Error searching collection ${collection}:`, error);
+    }
+  }
+
+  return { hadiths: results, totalFound };
+}

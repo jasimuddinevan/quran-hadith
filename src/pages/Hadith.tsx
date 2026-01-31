@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Book, Search, ArrowLeft, RefreshCw } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useQuery } from '@tanstack/react-query';
 import { 
   hadithCollections, 
@@ -14,11 +15,29 @@ import {
   fetchCollectionMetadata,
   fetchHadithsBySection,
   getCollectionName,
+  searchHadiths,
 } from '@/lib/hadithApi';
 import HadithCard from '@/components/hadith/HadithCard';
 import CollectionCard from '@/components/hadith/CollectionCard';
 import SectionList from '@/components/hadith/SectionList';
 import HadithSkeleton from '@/components/hadith/HadithSkeleton';
+
+// Custom hook for debouncing
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
 
 const Hadith: React.FC = () => {
   const { t, isEnglish, language } = useLanguage();
@@ -28,6 +47,11 @@ const Hadith: React.FC = () => {
   const [selectedCollection, setSelectedCollection] = useState<string | null>(null);
   const [selectedSection, setSelectedSection] = useState<{ number: number; name: string } | null>(null);
   const [page, setPage] = useState(1);
+  
+  // Search-specific state
+  const [searchInputValue, setSearchInputValue] = useState('');
+  const [searchCollectionFilter, setSearchCollectionFilter] = useState<string>('all');
+  const debouncedSearchQuery = useDebounce(searchInputValue, 300);
 
   // Set collection from URL param on mount
   useEffect(() => {
@@ -43,6 +67,14 @@ const Hadith: React.FC = () => {
   const { data: randomHadiths, isLoading: isLoadingRandom, refetch: refetchRandom } = useQuery({
     queryKey: ['randomHadiths', language],
     queryFn: () => fetchRandomHadiths(5, language),
+    staleTime: 1000 * 60 * 5,
+  });
+
+  // Search hadiths query
+  const { data: searchResults, isLoading: isSearching } = useQuery({
+    queryKey: ['hadithSearch', debouncedSearchQuery, searchCollectionFilter, language],
+    queryFn: () => searchHadiths(debouncedSearchQuery, searchCollectionFilter, language),
+    enabled: debouncedSearchQuery.length >= 3,
     staleTime: 1000 * 60 * 5,
   });
 
@@ -209,9 +241,12 @@ const Hadith: React.FC = () => {
           </div>
         ) : (
           <Tabs defaultValue="collections" className="w-full">
-            <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+            <TabsList className="grid w-full max-w-lg mx-auto grid-cols-3 mb-8">
               <TabsTrigger value="collections">
                 {isEnglish ? 'Collections' : 'সংকলন'}
+              </TabsTrigger>
+              <TabsTrigger value="search">
+                {isEnglish ? 'Search' : 'অনুসন্ধান'}
               </TabsTrigger>
               <TabsTrigger value="browse">
                 {isEnglish ? 'Browse' : 'ব্রাউজ'}
@@ -228,6 +263,77 @@ const Hadith: React.FC = () => {
                     onClick={() => setSelectedCollection(collection.id)}
                   />
                 ))}
+              </div>
+            </TabsContent>
+
+            <TabsContent value="search">
+              {/* Search Input and Filter */}
+              <div className="max-w-2xl mx-auto mb-6 space-y-4">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="text"
+                      placeholder={isEnglish ? 'Search hadiths by keyword...' : 'কীওয়ার্ড দিয়ে হাদিস খুঁজুন...'}
+                      value={searchInputValue}
+                      onChange={(e) => setSearchInputValue(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                  <Select value={searchCollectionFilter} onValueChange={setSearchCollectionFilter}>
+                    <SelectTrigger className="w-[180px]">
+                      <SelectValue placeholder={isEnglish ? 'All Collections' : 'সকল সংকলন'} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">{isEnglish ? 'All Collections' : 'সকল সংকলন'}</SelectItem>
+                      {hadithCollections.map((collection) => (
+                        <SelectItem key={collection.id} value={collection.id}>
+                          {isEnglish ? collection.name : collection.nameBn}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {/* Search info/status */}
+                {debouncedSearchQuery.length > 0 && debouncedSearchQuery.length < 3 && (
+                  <p className="text-sm text-muted-foreground text-center">
+                    {isEnglish ? 'Enter at least 3 characters to search' : 'অনুসন্ধানের জন্য কমপক্ষে ৩টি অক্ষর লিখুন'}
+                  </p>
+                )}
+                {searchResults && debouncedSearchQuery.length >= 3 && (
+                  <p className="text-sm text-muted-foreground text-center">
+                    {isEnglish 
+                      ? `Found ${searchResults.totalFound} hadith${searchResults.totalFound !== 1 ? 's' : ''}${searchResults.totalFound > 50 ? ' (showing first 50)' : ''}`
+                      : `${searchResults.totalFound}টি হাদিস পাওয়া গেছে${searchResults.totalFound > 50 ? ' (প্রথম ৫০টি দেখানো হচ্ছে)' : ''}`
+                    }
+                  </p>
+                )}
+              </div>
+
+              {/* Search Results */}
+              <div className="space-y-4">
+                {isSearching ? (
+                  [...Array(3)].map((_, i) => <HadithSkeleton key={i} />)
+                ) : debouncedSearchQuery.length >= 3 && searchResults ? (
+                  searchResults.hadiths.length > 0 ? (
+                    searchResults.hadiths.map((hadith) => (
+                      <HadithCard key={`${hadith.bookSlug}-${hadith.id}`} hadith={hadith} />
+                    ))
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      {isEnglish ? 'No hadiths found matching your search' : 'আপনার অনুসন্ধানের সাথে মিলে যায় এমন কোনো হাদিস পাওয়া যায়নি'}
+                    </div>
+                  )
+                ) : (
+                  <div className="text-center py-12 text-muted-foreground">
+                    <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>{isEnglish ? 'Search for hadiths by entering keywords' : 'কীওয়ার্ড লিখে হাদিস অনুসন্ধান করুন'}</p>
+                    <p className="text-sm mt-2">
+                      {isEnglish ? 'Search works in English, Bengali, and Arabic' : 'ইংরেজি, বাংলা এবং আরবিতে অনুসন্ধান করা যায়'}
+                    </p>
+                  </div>
+                )}
               </div>
             </TabsContent>
 

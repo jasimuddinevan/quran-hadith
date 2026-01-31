@@ -153,7 +153,7 @@ const translations: Record<Language, Record<string, string>> = {
     // Navigation
     'nav.home': 'হোম',
     'nav.quran': 'কুরআন',
-    'nav.read': 'পড়ুন',
+    'nav.read': 'কুরআন',
     'nav.hadith': 'হাদিস',
     'nav.dua': 'দোয়া',
     'nav.settings': 'সেটিংস',

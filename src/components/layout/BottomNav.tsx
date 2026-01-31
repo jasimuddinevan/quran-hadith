@@ -9,7 +9,7 @@ const BottomNav: React.FC = () => {
 
   const navItems = [
     { icon: Home, label: t('nav.home'), path: '/' },
-    { icon: BookOpen, label: t('nav.read'), path: '/read' },
+    { icon: BookOpen, label: t('nav.readMobile'), path: '/read' },
     { icon: ScrollText, label: t('nav.hadith'), path: '/hadith' },
     { icon: HandHeart, label: t('nav.dua'), path: '/dua' },
     { icon: Settings, label: t('nav.settings'), path: '/settings' },

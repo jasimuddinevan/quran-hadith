@@ -25,7 +25,7 @@ const Read: React.FC = () => {
     {
       title: isEnglish ? 'Read by Juz' : 'পারা অনুযায়ী পড়ুন',
       description: isEnglish ? 'Read by Juz (Para)' : 'পারা অনুযায়ী পড়ুন',
-      path: '/quran',
+      path: '/quran?view=juz',
       icon: '📕',
     },
     {

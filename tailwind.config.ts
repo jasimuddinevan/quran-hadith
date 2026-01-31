@@ -14,7 +14,7 @@ export default {
     },
     extend: {
       fontFamily: {
-        sans: ['Anek Bangla', 'system-ui', 'sans-serif'],
+        sans: ['Noto Serif Bengali', 'system-ui', 'sans-serif'],
         arabic: ['Amiri', 'serif'],
       },
       colors: {

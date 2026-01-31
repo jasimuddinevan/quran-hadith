@@ -50,7 +50,7 @@ const Header: React.FC = () => {
             <BookOpen className="h-5 w-5" />
           </div>
           <div className="flex flex-col">
-            <span className="text-lg font-semibold leading-tight text-foreground">
+            <span className="text-xl font-semibold leading-tight text-foreground">
               {t('hero.title')}
             </span>
             <span className="text-xs text-muted-foreground leading-tight hidden sm:block">

@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { HandHeart, Search } from 'lucide-react';
+import useEmblaCarousel from 'embla-carousel-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-
-import { duas, duaCategories, getDuasByCategory, type DuaItem } from '@/lib/duaData';
+import { duas, duaCategories, getDuasByCategory } from '@/lib/duaData';
 import DuaCard from '@/components/dua/DuaCard';
 
 const Dua: React.FC = () => {
@@ -15,6 +15,12 @@ const Dua: React.FC = () => {
   const categoryParam = searchParams.get('category');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  
+  const [emblaRef] = useEmblaCarousel({
+    dragFree: true,
+    containScroll: 'trimSnaps',
+    align: 'start',
+  });
 
   // Set category from URL param on mount
   useEffect(() => {
@@ -75,16 +81,9 @@ const Dua: React.FC = () => {
           </div>
         </div>
 
-        {/* Category Filter - Touch Draggable */}
-        <div 
-          className="w-full overflow-x-auto mb-8 scrollbar-hide"
-          style={{ 
-            WebkitOverflowScrolling: 'touch',
-            scrollbarWidth: 'none',
-            msOverflowStyle: 'none'
-          }}
-        >
-          <div className="flex gap-2 pb-2 px-1 touch-pan-x">
+        {/* Category Filter - Touch Draggable with Embla */}
+        <div className="overflow-hidden mb-8" ref={emblaRef}>
+          <div className="flex gap-2 pb-2">
             {duaCategories.map((category) => {
               const Icon = category.icon;
               const isSelected = selectedCategory === category.id;

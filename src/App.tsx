@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { BookmarkProvider } from "@/contexts/BookmarkContext";
+import { SettingsProvider } from "@/contexts/SettingsContext";
 import OfflineIndicator from "@/components/OfflineIndicator";
 import Index from "./pages/Index";
 import Quran from "./pages/Quran";
@@ -24,27 +25,29 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <LanguageProvider>
       <BookmarkProvider>
-        <TooltipProvider>
-          <OfflineIndicator />
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/quran" element={<Quran />} />
-              <Route path="/quran/:surahId" element={<SurahReader />} />
-              <Route path="/read" element={<Read />} />
-              <Route path="/hadith" element={<Hadith />} />
-              <Route path="/dua" element={<Dua />} />
-              <Route path="/names-of-allah" element={<NamesOfAllah />} />
-              <Route path="/prayer" element={<Prayer />} />
-              <Route path="/settings" element={<Settings />} />
-              <Route path="/bookmarks" element={<Bookmarks />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
+        <SettingsProvider>
+          <TooltipProvider>
+            <OfflineIndicator />
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/quran" element={<Quran />} />
+                <Route path="/quran/:surahId" element={<SurahReader />} />
+                <Route path="/read" element={<Read />} />
+                <Route path="/hadith" element={<Hadith />} />
+                <Route path="/dua" element={<Dua />} />
+                <Route path="/names-of-allah" element={<NamesOfAllah />} />
+                <Route path="/prayer" element={<Prayer />} />
+                <Route path="/settings" element={<Settings />} />
+                <Route path="/bookmarks" element={<Bookmarks />} />
+                {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </SettingsProvider>
       </BookmarkProvider>
     </LanguageProvider>
   </QueryClientProvider>

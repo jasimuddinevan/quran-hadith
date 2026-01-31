@@ -1,88 +1,63 @@
 
 
-# Hadith Search Pagination
+# Change Bengali Font to Noto Serif Bengali
 
 ## Overview
-Modify the search functionality to find all matching hadiths and add pagination controls, allowing users to navigate through large result sets efficiently.
+Replace the current "Anek Bangla" font with "Noto Serif Bengali" from BanglaWebFonts for Bengali text throughout the website. The header logo text will remain with the current font but be slightly larger (1-2px).
 
 ## Current State
-- Search is limited to 50 results with no pagination
-- All matching is done server-side with early termination at 50 results
-- No way to see results beyond the first 50
+- **Primary font**: Anek Bangla (loaded from Google Fonts)
+- **Arabic font**: Amiri (unchanged)
+- **Header title**: Uses `text-lg` class (18px)
+- Font is defined in `tailwind.config.ts` and loaded in `index.html`
 
 ## Proposed Changes
 
-### 1. Update Search API Function
-Modify `searchHadiths()` in `src/lib/hadithApi.ts`:
-- Remove the 50-result limit during search
-- Find ALL matching hadiths across selected collections
-- Add `page` and `pageSize` parameters
-- Return paginated slice with total count and pagination info
+### 1. Update Font Loading (index.html)
+- Replace Google Fonts Anek Bangla link with BanglaWebFonts Noto Serif Bengali link
+- Keep Amiri font for Arabic text
 
-### 2. Update Search UI with Pagination
-Modify `src/pages/Hadith.tsx`:
-- Add `searchPage` state variable (starting at 1)
-- Reset page to 1 when search query or collection filter changes
-- Add pagination controls (Previous/Next buttons with page indicator)
-- Show total results count and current page range
+### 2. Update Tailwind Configuration (tailwind.config.ts)
+- Change `font-sans` from 'Anek Bangla' to 'Noto Serif Bengali'
+- Fallback to system fonts
 
-## Technical Details
+### 3. Increase Header Title Size (Header.tsx)
+- Change logo title from `text-lg` (18px) to `text-xl` (20px) for a 2px increase
 
-### API Changes (src/lib/hadithApi.ts)
+## Implementation Details
 
-Update the `SearchResult` interface:
+### File: index.html
+Replace the font links in the `<head>`:
 ```text
-interface SearchResult {
-  hadiths: HadithResponse[];
-  totalFound: number;
-  page: number;
-  pageSize: number;
-  totalPages: number;
-}
+<!-- Remove Anek Bangla, add Noto Serif Bengali -->
+<link rel="preconnect" href="https://banglawebfonts.pages.dev">
+<link href="https://banglawebfonts.pages.dev/css/noto-serif-bengali.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 ```
 
-Update `searchHadiths()` function:
-- Add parameters: `page: number = 1`, `pageSize: number = 20`
-- Remove the `limit` parameter
-- Search ALL hadiths without early termination
-- Store all matches in memory
-- Return the correct slice based on page/pageSize
-- Calculate and return `totalPages`
-
-### Page Changes (src/pages/Hadith.tsx)
-
-1. Add state: `searchPage` (number, default 1)
-2. Reset `searchPage` to 1 when `debouncedSearchQuery` or `searchCollectionFilter` changes
-3. Update React Query key to include `searchPage`
-4. Add pagination UI below search results:
-   - Previous/Next buttons
-   - Current page indicator (e.g., "Page 1 of 5")
-   - Results range (e.g., "Showing 1-20 of 100")
-
-## User Experience
-
+### File: tailwind.config.ts
+Update the fontFamily configuration:
 ```text
-User searches "prayer"
-        |
-        v
-"Found 247 hadiths - Showing 1-20"
-        |
-        v
-[Hadith results 1-20]
-        |
-        v
-[Previous] Page 1 of 13 [Next]
+fontFamily: {
+  sans: ['Noto Serif Bengali', 'system-ui', 'sans-serif'],
+  arabic: ['Amiri', 'serif'],
+},
 ```
 
-## Implementation Files
+### File: src/components/layout/Header.tsx
+Increase the header title font size:
+```text
+// Change from text-lg to text-xl
+<span className="text-xl font-semibold leading-tight text-foreground">
+```
 
-| File | Changes |
-|------|---------|
-| `src/lib/hadithApi.ts` | Update `searchHadiths()` to support pagination |
-| `src/pages/Hadith.tsx` | Add pagination state and UI controls |
+## Summary
 
-## Performance Considerations
-- Use existing cache to avoid re-fetching data on page changes
-- Keep page size reasonable (20 items per page)
-- React Query will cache results per page for quick navigation
+| File | Change |
+|------|--------|
+| `index.html` | Replace Anek Bangla with Noto Serif Bengali font link |
+| `tailwind.config.ts` | Update `font-sans` to use 'Noto Serif Bengali' |
+| `src/components/layout/Header.tsx` | Increase title from `text-lg` to `text-xl` (+2px) |
 

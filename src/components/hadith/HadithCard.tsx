@@ -111,30 +111,34 @@ const HadithCard: React.FC<HadithCardProps> = ({ hadith, showCollection = true }
         <div className="p-4 space-y-4">
           {/* Arabic Text */}
           {hasArabic && (
-            <div className="relative">
+            <div>
               <div 
                 className={cn(
-                  "p-4 rounded-lg bg-gradient-to-br from-amber-50/80 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 border border-amber-200/50 dark:border-amber-800/30",
+                  "p-4 rounded-lg bg-gradient-to-br from-amber-50/80 to-amber-100/50 dark:from-amber-950/30 dark:to-amber-900/20 border border-amber-200/50 dark:border-amber-800/30 relative",
                   isLongArabic && !showFullArabic && "max-h-32 overflow-hidden"
                 )}
               >
                 <p className="arabic-text text-xl md:text-2xl text-right leading-[2.2] text-foreground font-medium">
                   {hadith.hadithArabic}
                 </p>
+                
+                {/* Fade overlay for long text - inside the container */}
+                {isLongArabic && !showFullArabic && (
+                  <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-amber-100 dark:from-amber-950 to-transparent pointer-events-none" />
+                )}
               </div>
-              
-              {/* Fade overlay for long text */}
-              {isLongArabic && !showFullArabic && (
-                <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-amber-100/90 dark:from-amber-950/90 to-transparent rounded-b-lg" />
-              )}
               
               {/* Show more/less button */}
               {isLongArabic && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="w-full mt-2 text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300"
-                  onClick={() => setShowFullArabic(!showFullArabic)}
+                  className="w-full mt-2 text-amber-700 dark:text-amber-400 hover:text-amber-800 dark:hover:text-amber-300 hover:bg-amber-100/50 dark:hover:bg-amber-900/30"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setShowFullArabic(prev => !prev);
+                  }}
                 >
                   {showFullArabic ? (
                     <>

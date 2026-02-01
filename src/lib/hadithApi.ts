@@ -285,6 +285,50 @@ export interface SearchResult {
 // Cache for search results to avoid re-searching on page changes
 const searchResultsCache: Map<string, HadithResponse[]> = new Map();
 
+// Normalize Bengali text for fuzzy matching
+// Maps common Bengali vowel variations to a canonical form
+function normalizeBengali(text: string): string {
+  if (!text) return '';
+  
+  // Common Bengali vowel substitutions for better search
+  // ে (e-kar) and ি (i-kar) are often interchangeable in transliterations
+  // ো (o-kar) and ৌ (ou-kar) variations
+  return text
+    .normalize('NFC')
+    .toLowerCase()
+    // Normalize common vowel variations
+    .replace(/ে/g, 'ি')  // e-kar → i-kar (কেয়ামত → কিয়ামত)
+    .replace(/ৈ/g, 'ি')  // oi-kar → i-kar
+    .replace(/ো/g, 'ো')  // keep o-kar
+    .replace(/ৌ/g, 'ো')  // ou-kar → o-kar
+    // Normalize nukta variations  
+    .replace(/য়/g, 'য')  // ya with nukta → ya
+    .trim();
+}
+
+// Normalize text for consistent matching (handles Unicode normalization for Bengali/Arabic)
+function normalizeText(text: string): string {
+  if (!text) return '';
+  return text.normalize('NFC').toLowerCase().trim();
+}
+
+// Check if text contains query (handles Bengali Unicode properly with fuzzy matching)
+function textContainsQuery(text: string | undefined, query: string, normalizedQuery: string): boolean {
+  if (!text) return false;
+  
+  const normalizedText = normalizeText(text);
+  const bengaliNormalizedText = normalizeBengali(text);
+  const bengaliNormalizedQuery = normalizeBengali(query);
+  
+  // Try multiple matching strategies:
+  // 1. Exact normalized match
+  // 2. Bengali fuzzy match (handles vowel variations)
+  // 3. Raw text contains query
+  return normalizedText.includes(normalizedQuery) || 
+         bengaliNormalizedText.includes(bengaliNormalizedQuery) ||
+         text.includes(query);
+}
+
 export async function searchHadiths(
   query: string,
   collectionId: string | 'all' = 'all',
@@ -292,25 +336,23 @@ export async function searchHadiths(
   page: number = 1,
   pageSize: number = 20
 ): Promise<SearchResult> {
-  if (query.length < 3) {
+  if (query.length < 2) {
     return { hadiths: [], totalFound: 0, page: 1, pageSize, totalPages: 0 };
   }
 
-  const cacheKey = `${query.toLowerCase()}-${collectionId}-${language}`;
+  const normalizedQuery = normalizeText(query);
+  const cacheKey = `${normalizedQuery}-${collectionId}-${language}`;
   
   // Check if we have cached results for this search
   let allResults = searchResultsCache.get(cacheKey);
   
   if (!allResults) {
-    // Perform the full search
-    const lowerQuery = query.toLowerCase();
     const collectionsToSearch = collectionId === 'all' 
       ? hadithCollections.map(c => c.id)
       : [collectionId];
 
-    allResults = [];
-
-    for (const collection of collectionsToSearch) {
+    // Search all collections in PARALLEL for speed
+    const collectionResultsPromises = collectionsToSearch.map(async (collection) => {
       try {
         // Fetch all three languages in parallel
         const [primaryHadiths, otherHadiths, arabicHadiths] = await Promise.all([
@@ -319,22 +361,21 @@ export async function searchHadiths(
           loadHadithData(collection, 'ar')
         ]);
 
+        const results: HadithResponse[] = [];
+
         for (let i = 0; i < primaryHadiths.length; i++) {
           const hadith = primaryHadiths[i];
           const otherHadith = otherHadiths.find((h: any) => h.hadithnumber === hadith.hadithnumber) || otherHadiths[i];
           const arabicHadith = arabicHadiths.find((h: any) => h.hadithnumber === hadith.hadithnumber) || arabicHadiths[i];
 
-          const primaryText = hadith.text?.toLowerCase() || '';
-          const otherText = otherHadith?.text?.toLowerCase() || '';
-          const arabicText = arabicHadith?.text || '';
+          // Search in all available texts using normalized comparison
+          const matchFound = 
+            textContainsQuery(hadith?.text, query, normalizedQuery) ||
+            textContainsQuery(otherHadith?.text, query, normalizedQuery) ||
+            textContainsQuery(arabicHadith?.text, query, normalizedQuery);
 
-          // Search in all available texts
-          if (
-            primaryText.includes(lowerQuery) ||
-            otherText.includes(lowerQuery) ||
-            arabicText.includes(query) // Arabic is case-sensitive
-          ) {
-            allResults.push({
+          if (matchFound) {
+            results.push({
               id: hadith.hadithnumber || i + 1,
               hadithNumber: String(hadith.hadithnumber || i + 1),
               hadithArabic: arabicHadith?.text || '',
@@ -347,10 +388,17 @@ export async function searchHadiths(
             });
           }
         }
+
+        return results;
       } catch (error) {
         console.error(`Error searching collection ${collection}:`, error);
+        return [];
       }
-    }
+    });
+
+    // Wait for all collections to finish and flatten results
+    const collectionResults = await Promise.all(collectionResultsPromises);
+    allResults = collectionResults.flat();
 
     // Cache the results
     searchResultsCache.set(cacheKey, allResults);

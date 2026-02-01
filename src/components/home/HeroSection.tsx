@@ -17,7 +17,7 @@ const HeroSection: React.FC = () => {
   const { t, language } = useLanguage();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchFilter, setSearchFilter] = useState<SearchFilter>('all');
+  const [searchFilter, setSearchFilter] = useState<SearchFilter>('quran');
 
   const filterLabels: Record<SearchFilter, { en: string; bn: string }> = {
     all: { en: 'All', bn: 'সব' },

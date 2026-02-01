@@ -15,7 +15,7 @@ const HeroSection: React.FC = () => {
       <div className="absolute inset-0 islamic-pattern-enhanced opacity-60" />
       
       {/* Content wrapper */}
-      <div className="relative container py-8 md:py-14">
+      <div className="relative container py-6 sm:py-8 md:py-14 px-4 sm:px-6">
         {/* Decorative Islamic Arch Frame */}
         <div className="relative max-w-4xl mx-auto">
           {/* Ornate Arch Frame SVG */}
@@ -109,27 +109,27 @@ const HeroSection: React.FC = () => {
           </svg>
 
           {/* Main content area */}
-          <div className="relative flex flex-col items-center text-center pt-20 pb-12 px-6">
+          <div className="relative flex flex-col items-center text-center pt-12 sm:pt-16 md:pt-20 pb-8 sm:pb-10 md:pb-12 px-4 sm:px-6">
             {/* Decorative gold sparkle icon */}
-            <div className="mb-6 animate-fade-in">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-br from-gold/25 to-gold-light/15 border-2 border-gold/40 shadow-lg shadow-gold/15">
-                <Sparkles className="h-8 w-8 text-gold" />
+            <div className="mb-4 sm:mb-6 animate-fade-in">
+              <div className="inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-gradient-to-br from-gold/25 to-gold-light/15 border-2 border-gold/40 shadow-lg shadow-gold/15">
+                <Sparkles className="h-6 w-6 sm:h-7 sm:w-7 md:h-8 md:w-8 text-gold" />
               </div>
             </div>
 
             {/* Title */}
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-3 text-foreground animate-fade-in">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold mb-2 sm:mb-3 text-foreground animate-fade-in">
               {t('hero.title')}
             </h1>
             
             {/* Subtitle */}
-            <p className="text-lg md:text-xl text-muted-foreground mb-2 animate-fade-in" style={{ animationDelay: '0.1s' }}>
+            <p className="text-sm sm:text-base md:text-xl text-muted-foreground mb-1.5 sm:mb-2 animate-fade-in" style={{ animationDelay: '0.1s' }}>
               {t('hero.subtitle')}
             </p>
             
             {/* AI Subtitle with gold accent */}
-            <p className="text-sm md:text-base text-muted-foreground mb-10 max-w-lg animate-fade-in flex items-center gap-2" style={{ animationDelay: '0.15s' }}>
-              <Sparkles className="h-4 w-4 text-gold" />
+            <p className="text-xs sm:text-sm md:text-base text-muted-foreground mb-6 sm:mb-8 md:mb-10 max-w-lg animate-fade-in flex items-center gap-1.5 sm:gap-2" style={{ animationDelay: '0.15s' }}>
+              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-gold flex-shrink-0" />
               <span>{t('hero.aiSubtitle')}</span>
             </p>
 

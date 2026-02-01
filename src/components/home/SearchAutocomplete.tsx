@@ -230,12 +230,12 @@ const SearchAutocomplete: React.FC = () => {
           </div>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-[var(--radix-popover-trigger-width)] p-0 border border-border shadow-xl bg-popover/95 backdrop-blur-sm"
+          className="w-[var(--radix-popover-trigger-width)] p-0 border border-border shadow-xl bg-popover/95 backdrop-blur-sm rounded-2xl overflow-hidden"
           align="start"
           sideOffset={8}
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
-          <ScrollArea className="max-h-[300px]">
+          <ScrollArea className="max-h-[250px] sm:max-h-[300px]">
             {isLoading ? (
               <div className="flex items-center justify-center py-6">
                 <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -248,34 +248,34 @@ const SearchAutocomplete: React.FC = () => {
                     type="button"
                     onClick={() => handleSuggestionClick(suggestion)}
                     className={cn(
-                      "w-full px-4 py-3 text-left hover:bg-accent/50 transition-colors flex items-start gap-3",
+                      "w-full px-3 sm:px-4 py-2.5 sm:py-3 text-left hover:bg-accent/50 transition-colors flex items-start gap-2 sm:gap-3",
                       index !== suggestions.length - 1 && "border-b border-border/50"
                     )}
                   >
                     <div className={cn(
-                      "flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center mt-0.5",
+                      "flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center mt-0.5",
                       suggestion.type === 'quran' 
                         ? "bg-primary/10 text-primary" 
                         : "bg-gold/10 text-gold"
                     )}>
                       {suggestion.type === 'quran' ? (
-                        <BookOpen className="h-4 w-4" />
+                        <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       ) : (
-                        <ScrollText className="h-4 w-4" />
+                        <ScrollText className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-sm text-foreground truncate">
+                      <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                        <span className="font-medium text-xs sm:text-sm text-foreground truncate">
                           {suggestion.title}
                         </span>
                         {suggestion.subtitle && (
-                          <span className="text-xs text-muted-foreground truncate">
+                          <span className="text-[10px] sm:text-xs text-muted-foreground truncate hidden sm:inline">
                             {suggestion.subtitle}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">
+                      <p className="text-[11px] sm:text-xs text-muted-foreground mt-0.5 line-clamp-1 sm:line-clamp-2">
                         {suggestion.preview}
                       </p>
                     </div>
@@ -290,7 +290,7 @@ const SearchAutocomplete: React.FC = () => {
                       setIsOpen(false);
                       navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}&filter=${searchFilter}`);
                     }}
-                    className="w-full px-4 py-3 text-center text-sm font-medium text-primary hover:bg-accent/50 transition-colors border-t border-border"
+                    className="w-full px-3 sm:px-4 py-2.5 sm:py-3 text-center text-xs sm:text-sm font-medium text-primary hover:bg-accent/50 transition-colors border-t border-border"
                   >
                     {language === 'bn' ? 'সব ফলাফল দেখুন' : 'View all results'} →
                   </button>

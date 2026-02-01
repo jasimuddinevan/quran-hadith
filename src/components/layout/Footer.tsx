@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Heart, BookOpen, Mail, ExternalLink } from 'lucide-react';
+import { Heart, BookOpen } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 
 const Footer: React.FC = () => {
@@ -124,17 +124,15 @@ const Footer: React.FC = () => {
               © {currentYear} {isEnglish ? 'IlmPath. All rights reserved.' : 'ইলমপাথ। সর্বস্বত্ব সংরক্ষিত।'}
             </p>
             <div className="flex items-center gap-1">
-              <span>{t('footer.madeWith')}</span>
               <Heart className="h-3.5 w-3.5 text-destructive fill-destructive" />
-              <span>{isEnglish ? 'by' : 'তৈরি করেছেন'}</span>
+              <span>{isEnglish ? 'Made by' : 'তৈরি করেছেন'}</span>
               <a 
                 href="https://bio.link/jasimuddin" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="font-medium text-primary hover:underline transition-colors inline-flex items-center gap-1"
+                className="font-medium text-primary hover:underline transition-colors"
               >
                 Jasim Uddin
-                <ExternalLink className="h-3 w-3" />
               </a>
             </div>
           </div>

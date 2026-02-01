@@ -41,10 +41,17 @@ const SearchResultCard: React.FC<{ result: CombinedResult; query: string; langua
 }) => {
   const navigate = useNavigate();
   
-  const highlightText = (text: string) => {
-    if (!query || !text) return text;
+  // Clean and highlight text - removes raw HTML tags and highlights query matches
+  const cleanAndHighlightText = (text: string) => {
+    if (!text) return '';
+    
+    // Remove <em> and </em> tags from API response
+    const cleanedText = text.replace(/<\/?em>/gi, '');
+    
+    if (!query) return cleanedText;
+    
     const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-    const parts = text.split(regex);
+    const parts = cleanedText.split(regex);
     return parts.map((part, i) => 
       regex.test(part) ? <mark key={i} className="bg-gold/30 text-foreground px-0.5 rounded">{part}</mark> : part
     );
@@ -73,7 +80,7 @@ const SearchResultCard: React.FC<{ result: CombinedResult; query: string; langua
                 </p>
               )}
               <p className="text-xs sm:text-sm text-foreground leading-relaxed line-clamp-3 group-hover:text-primary/80 transition-colors">
-                {highlightText(r.textTranslation)}
+                {cleanAndHighlightText(r.textTranslation)}
               </p>
             </div>
           </div>
@@ -108,7 +115,7 @@ const SearchResultCard: React.FC<{ result: CombinedResult; query: string; langua
                 </p>
               )}
               <p className="text-xs sm:text-sm text-foreground leading-relaxed line-clamp-3 group-hover:text-gold/80 transition-colors">
-                {highlightText(displayText)}
+                {cleanAndHighlightText(displayText)}
               </p>
             </div>
           </div>

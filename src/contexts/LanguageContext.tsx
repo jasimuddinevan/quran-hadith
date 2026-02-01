@@ -146,6 +146,17 @@ const translations: Record<Language, Record<string, string>> = {
     'settings.prayerReminders': 'Prayer Reminders',
     'settings.location': 'Location Settings',
     
+    // Search
+    'search.resultsFor': 'Results for',
+    'search.found': 'Found',
+    'search.results': 'results',
+    'search.seconds': 'seconds',
+    'search.all': 'All',
+    'search.quran': 'Quran',
+    'search.hadith': 'Hadith',
+    'search.noResults': 'No results found',
+    'search.tryDifferent': 'Try different keywords or check your spelling',
+    
     // Footer
     'footer.copyright': '© 2024 IlmPath. All rights reserved.',
     'footer.madeWith': 'Made with love for the Ummah',
@@ -284,6 +295,17 @@ const translations: Record<Language, Record<string, string>> = {
     'settings.notifications': 'নোটিফিকেশন',
     'settings.prayerReminders': 'নামাজের রিমাইন্ডার',
     'settings.location': 'অবস্থান সেটিংস',
+    
+    // Search
+    'search.resultsFor': 'এর জন্য ফলাফল',
+    'search.found': 'পাওয়া গেছে',
+    'search.results': 'ফলাফল',
+    'search.seconds': 'সেকেন্ড',
+    'search.all': 'সব',
+    'search.quran': 'কুরআন',
+    'search.hadith': 'হাদিস',
+    'search.noResults': 'কোনো ফলাফল পাওয়া যায়নি',
+    'search.tryDifferent': 'অন্য শব্দ দিয়ে চেষ্টা করুন বা বানান পরীক্ষা করুন',
     
     // Footer
     'footer.copyright': '© ২০২৪ ইলমপাথ। সর্বস্বত্ব সংরক্ষিত।',

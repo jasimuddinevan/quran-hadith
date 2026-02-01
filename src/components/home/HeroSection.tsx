@@ -1,10 +1,36 @@
-import React from 'react';
-import { Sparkles } from 'lucide-react';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Sparkles, Search, ChevronDown } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
-import SearchAutocomplete from './SearchAutocomplete';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
+type SearchFilter = 'all' | 'quran' | 'hadith';
 
 const HeroSection: React.FC = () => {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFilter, setSearchFilter] = useState<SearchFilter>('all');
+
+  const filterLabels: Record<SearchFilter, { en: string; bn: string }> = {
+    all: { en: 'All', bn: 'সব' },
+    quran: { en: 'Quran', bn: 'কুরআন' },
+    hadith: { en: 'Hadith', bn: 'হাদিস' },
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}&filter=${searchFilter}`);
+    }
+  };
 
   return (
     <section className="relative overflow-hidden">
@@ -133,8 +159,74 @@ const HeroSection: React.FC = () => {
               <span>{t('hero.aiSubtitle')}</span>
             </p>
 
-            {/* AI Search Bar with Autocomplete */}
-            <SearchAutocomplete />
+            {/* Search Bar */}
+            <form 
+              onSubmit={handleSearch}
+              className="w-full max-w-2xl animate-fade-in"
+              style={{ animationDelay: '0.2s' }}
+            >
+              <div className="relative flex items-center">
+                <div className="absolute left-3 sm:left-4 flex items-center text-muted-foreground">
+                  <Search className="h-4 w-4 sm:h-5 sm:w-5" />
+                </div>
+                <Input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder={t('hero.search')}
+                  className="w-full pl-10 sm:pl-12 pr-24 sm:pr-36 py-5 sm:py-6 text-sm sm:text-base rounded-full bg-card text-foreground border-2 border-gold/20 shadow-xl shadow-gold/5 focus-visible:ring-2 focus-visible:ring-gold/30 focus-visible:border-gold/40"
+                />
+                <div className="absolute right-1 sm:right-2 flex items-center gap-0.5 sm:gap-1">
+                  {/* Filter Dropdown */}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="h-7 sm:h-9 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-medium text-muted-foreground hover:text-gold hover:bg-gold/10 gap-0.5 sm:gap-1"
+                      >
+                        <span className="hidden sm:inline">
+                          {language === 'bn' ? filterLabels[searchFilter].bn : filterLabels[searchFilter].en}
+                        </span>
+                        <span className="sm:hidden text-[10px]">
+                          {language === 'bn' ? filterLabels[searchFilter].bn : filterLabels[searchFilter].en}
+                        </span>
+                        <ChevronDown className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="min-w-[100px] bg-popover border border-border shadow-lg z-50">
+                      <DropdownMenuItem 
+                        onClick={() => setSearchFilter('all')}
+                        className={searchFilter === 'all' ? 'bg-accent' : ''}
+                      >
+                        {language === 'bn' ? 'সব' : 'All'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setSearchFilter('quran')}
+                        className={searchFilter === 'quran' ? 'bg-accent' : ''}
+                      >
+                        {language === 'bn' ? 'কুরআন' : 'Quran'}
+                      </DropdownMenuItem>
+                      <DropdownMenuItem 
+                        onClick={() => setSearchFilter('hadith')}
+                        className={searchFilter === 'hadith' ? 'bg-accent' : ''}
+                      >
+                        {language === 'bn' ? 'হাদিস' : 'Hadith'}
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                  
+                  <Button
+                    type="submit"
+                    size="icon"
+                    className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+                  >
+                    <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                  </Button>
+                </div>
+              </div>
+            </form>
           </div>
         </div>
       </div>

@@ -17,6 +17,7 @@ import NamesOfAllah from "./pages/NamesOfAllah";
 import Prayer from "./pages/Prayer";
 import Settings from "./pages/Settings";
 import Bookmarks from "./pages/Bookmarks";
+import Search from "./pages/Search";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
                 <Route path="/prayer" element={<Prayer />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/bookmarks" element={<Bookmarks />} />
+                <Route path="/search" element={<Search />} />
                 {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                 <Route path="*" element={<NotFound />} />
               </Routes>

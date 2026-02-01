@@ -174,7 +174,7 @@ const HeroSection: React.FC = () => {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t('hero.search')}
-                  className="w-full pl-12 sm:pl-14 pr-28 sm:pr-40 md:pr-44 py-6 sm:py-7 md:py-8 text-sm sm:text-base md:text-lg rounded-full bg-card text-foreground border-2 border-gold/20 shadow-xl shadow-gold/5 focus-visible:ring-2 focus-visible:ring-gold/30 focus-visible:border-gold/40"
+                  className="w-full pl-12 sm:pl-14 pr-28 sm:pr-40 md:pr-44 py-5 sm:py-6 text-sm sm:text-base md:text-lg rounded-full bg-card text-foreground border-2 border-gold/20 shadow-xl shadow-gold/5 focus-visible:ring-2 focus-visible:ring-gold/30 focus-visible:border-gold/40"
                 />
                 <div className="absolute right-2 sm:right-3 flex items-center gap-1 sm:gap-2">
                   {/* Filter Dropdown */}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Bookmark, Copy, Play, Pause, Loader2, Square, Gauge } from 'lucide-react';
+import DOMPurify from 'dompurify';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBookmarks } from '@/contexts/BookmarkContext';
@@ -586,7 +587,12 @@ const SurahReader: React.FC = () => {
                       {/* Translation */}
                       <p 
                         className="text-muted-foreground leading-relaxed border-t border-border pt-4"
-                        dangerouslySetInnerHTML={{ __html: verse.translations[0]?.text || '' }}
+                        dangerouslySetInnerHTML={{ 
+                          __html: DOMPurify.sanitize(verse.translations[0]?.text || '', {
+                            ALLOWED_TAGS: ['em', 'strong', 'br', 'i', 'b'],
+                            ALLOWED_ATTR: []
+                          })
+                        }}
                       />
                     </CardContent>
                   </Card>

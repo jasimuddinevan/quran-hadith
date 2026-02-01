@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings as SettingsIcon, Globe, Bell, MapPin } from 'lucide-react';
+import { Settings as SettingsIcon, Globe, Bell, MapPin, Mail } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useSettings } from '@/contexts/SettingsContext';
@@ -171,11 +171,15 @@ const Settings: React.FC = () => {
               <h3 className="font-semibold text-foreground mb-2">
                 IlmPath
               </h3>
-              <p className="text-sm text-muted-foreground mb-4">
-                {isEnglish 
-                  ? 'Version 1.0.0 • Made with love for the Ummah' 
-                  : 'সংস্করণ ১.০.০ • উম্মাহর জন্য ভালোবাসায় তৈরি'}
-              </p>
+              <a 
+                href="https://bio.link/jasimuddin/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-sm text-primary hover:underline transition-colors mb-4"
+              >
+                <Mail className="h-4 w-4" />
+                {isEnglish ? 'Contact Us' : 'যোগাযোগ করুন'}
+              </a>
               <p className="text-xs text-muted-foreground">
                 {isEnglish 
                   ? '© 2025 IlmPath. All rights reserved.' 

@@ -162,21 +162,21 @@ const HeroSection: React.FC = () => {
             {/* Search Bar */}
             <form 
               onSubmit={handleSearch}
-              className="w-full max-w-2xl animate-fade-in"
+              className="w-full max-w-xl md:max-w-2xl lg:max-w-3xl animate-fade-in"
               style={{ animationDelay: '0.2s' }}
             >
               <div className="relative flex items-center">
-                <div className="absolute left-3 sm:left-4 flex items-center text-muted-foreground">
-                  <Search className="h-4 w-4 sm:h-5 sm:w-5" />
+                <div className="absolute left-4 sm:left-5 flex items-center text-muted-foreground">
+                  <Search className="h-5 w-5 sm:h-6 sm:w-6" />
                 </div>
                 <Input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t('hero.search')}
-                  className="w-full pl-10 sm:pl-12 pr-24 sm:pr-36 py-5 sm:py-6 text-sm sm:text-base rounded-full bg-card text-foreground border-2 border-gold/20 shadow-xl shadow-gold/5 focus-visible:ring-2 focus-visible:ring-gold/30 focus-visible:border-gold/40"
+                  className="w-full pl-12 sm:pl-14 pr-28 sm:pr-40 md:pr-44 py-6 sm:py-7 md:py-8 text-sm sm:text-base md:text-lg rounded-full bg-card text-foreground border-2 border-gold/20 shadow-xl shadow-gold/5 focus-visible:ring-2 focus-visible:ring-gold/30 focus-visible:border-gold/40"
                 />
-                <div className="absolute right-1 sm:right-2 flex items-center gap-0.5 sm:gap-1">
+                <div className="absolute right-2 sm:right-3 flex items-center gap-1 sm:gap-2">
                   {/* Filter Dropdown */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -184,18 +184,15 @@ const HeroSection: React.FC = () => {
                         type="button"
                         variant="ghost"
                         size="sm"
-                        className="h-7 sm:h-9 px-2 sm:px-3 rounded-full text-xs sm:text-sm font-medium text-muted-foreground hover:text-gold hover:bg-gold/10 gap-0.5 sm:gap-1"
+                        className="h-9 sm:h-10 md:h-11 px-3 sm:px-4 rounded-full text-xs sm:text-sm md:text-base font-medium text-muted-foreground hover:text-gold hover:bg-gold/10 gap-1"
                       >
-                        <span className="hidden sm:inline">
+                        <span>
                           {language === 'bn' ? filterLabels[searchFilter].bn : filterLabels[searchFilter].en}
                         </span>
-                        <span className="sm:hidden text-[10px]">
-                          {language === 'bn' ? filterLabels[searchFilter].bn : filterLabels[searchFilter].en}
-                        </span>
-                        <ChevronDown className="h-3 w-3" />
+                        <ChevronDown className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       </Button>
                     </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="min-w-[100px] bg-popover border border-border shadow-lg z-50">
+                    <DropdownMenuContent align="end" className="min-w-[120px] bg-popover border border-border shadow-lg z-50">
                       <DropdownMenuItem 
                         onClick={() => setSearchFilter('all')}
                         className={searchFilter === 'all' ? 'bg-accent' : ''}
@@ -220,9 +217,9 @@ const HeroSection: React.FC = () => {
                   <Button
                     type="submit"
                     size="icon"
-                    className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
+                    className="h-10 w-10 sm:h-12 sm:w-12 md:h-14 md:w-14 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-md"
                   >
-                    <Search className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                    <Search className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6" />
                   </Button>
                 </div>
               </div>

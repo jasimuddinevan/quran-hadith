@@ -1,174 +1,102 @@
 
 
-# Real-time Word-by-Word Highlighting for Quran Audio
+# Playback Speed Control for Quran Audio
 
 ## Overview
-Implement real-time word-by-word highlighting synchronized with audio playback in the Surah Reader, similar to Quran.com. Each Arabic word will highlight as the reciter speaks it, and users can click on any word to see its translation.
-
-## API Strategy
-
-We'll use the **Quran Foundation API** (api.quran.com) which provides:
-- Word-by-word data with Arabic text, English translations, and transliterations
-- Word-level audio timing segments for synchronized highlighting
-- The same Mishary Al-Afasy reciter (ID: 5) currently in use
-
-| Feature | Current (AlQuran.cloud) | New (api.quran.com) |
-|---------|-------------------------|---------------------|
-| Arabic text | ✅ | ✅ with word-level |
-| Translations | ✅ English/Bengali | ✅ English (word + verse) |
-| Audio | ✅ Alafasy | ✅ Alafasy with timing |
-| Word timing | ❌ | ✅ `[word_index, start_ms, end_ms]` |
+Add a playback speed control feature that allows users to adjust the audio recitation speed. The control will appear as an icon button next to the Play All button, which opens a popover with speed options.
 
 ## User Experience
 
-**During Audio Playback:**
-- Words highlight one-by-one in primary color (indigo/teal) with smooth transitions
-- Currently playing verse maintains its ring highlight
-- Auto-scrolls to keep active word visible
+**Speed Options:**
+- 0.5x (slow - for learning/memorization)
+- 0.75x (slightly slower)
+- 1x (normal speed - default)
+- 1.25x (slightly faster)
+- 1.5x (fast)
 
-**Click Interaction:**
-- Click any Arabic word to see a popover with:
-  - The word in larger Arabic text
-  - English transliteration (how to pronounce)
-  - English translation (meaning)
+**Interaction Flow:**
+1. User sees a gauge/speed icon next to "Play All" button
+2. Clicking the icon opens a popover with speed options
+3. Current speed is visually highlighted
+4. Selecting a speed immediately applies it to the audio
+5. Speed preference persists during the session
 
 ## Technical Implementation
 
-### New Data Structures
-
-```text
-interface Word {
-  id: number;
-  position: number;          // 1-based word index in verse
-  text_uthmani: string;      // Arabic text
-  char_type_name: 'word' | 'end';  // 'end' is verse end marker
-  translation: { text: string };
-  transliteration: { text: string };
-}
-
-interface VerseWithWords {
-  verse_key: string;         // e.g., "23:1"
-  verse_number: number;
-  words: Word[];
-  translations: { text: string }[];
-}
-
-interface AudioTimestamp {
-  verse_key: string;
-  timestamp_from: number;    // ms when verse starts
-  timestamp_to: number;      // ms when verse ends
-  segments: [number, number, number][];  // [word_position, start_ms, end_ms]
-}
-```
-
 ### Files to Modify
 
-**1. src/pages/SurahReader.tsx (Major Refactor)**
+**1. src/pages/SurahReader.tsx**
 
-API Changes:
-- Replace AlQuran.cloud calls with Quran Foundation API
-- Fetch verses with `words=true` for word-level data
-- Fetch chapter audio with `segments=true` for timing data
-
-New State:
+Add new state and handler:
 ```text
-const [wordData, setWordData] = useState<VerseWithWords[]>([]);
-const [audioTimings, setAudioTimings] = useState<Map<string, AudioTimestamp>>();
-const [highlightedWord, setHighlightedWord] = useState<{verseKey: string, position: number} | null>(null);
+const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
+
+const handleSpeedChange = (speed: number) => {
+  setPlaybackSpeed(speed);
+  if (audioRef.current) {
+    audioRef.current.playbackRate = speed;
+  }
+};
 ```
 
-Audio Synchronization:
+Apply speed when creating new audio:
 ```text
-// On audio.ontimeupdate
-const currentTimeMs = audio.currentTime * 1000;
-// Find which word's segment contains currentTimeMs
-// Set highlightedWord to that word's position
+// In playFromVerse function, after creating audio:
+audio.playbackRate = playbackSpeed;
 ```
 
-UI Changes:
-- Render Arabic text as clickable word spans instead of a single text block
-- Apply highlight class to the currently playing word
-
-**2. src/components/quran/WordPopover.tsx (New Component)**
-
-A simple popover component that displays when clicking a word:
+Add imports:
 ```text
-interface WordPopoverProps {
-  word: Word;
-  isOpen: boolean;
-  onClose: () => void;
-  triggerRef: React.RefObject<HTMLElement>;
-}
+import { Gauge } from 'lucide-react';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 ```
 
-Shows:
-- Arabic word (large, centered)
-- Transliteration (italicized)
-- Translation (meaning)
-
-**3. src/index.css (Add Styles)**
-
-Add word highlighting styles:
+Add UI next to Play All button:
 ```text
-.quran-word {
-  cursor: pointer;
-  transition: all 150ms ease;
-  padding: 0.1em 0.15em;
-  border-radius: 0.25rem;
-}
-
-.quran-word:hover {
-  background-color: hsl(var(--primary) / 0.1);
-}
-
-.quran-word.highlighted {
-  background-color: hsl(var(--primary) / 0.25);
-  color: hsl(var(--primary));
-}
+<Popover>
+  <PopoverTrigger asChild>
+    <Button variant="outline" size="icon" className="gap-1">
+      <Gauge className="h-4 w-4" />
+    </Button>
+  </PopoverTrigger>
+  <PopoverContent className="w-40 p-2">
+    <div className="space-y-1">
+      <p className="text-xs font-medium text-muted-foreground mb-2 px-2">
+        {isEnglish ? 'Speed' : 'গতি'}
+      </p>
+      {[0.5, 0.75, 1, 1.25, 1.5].map((speed) => (
+        <Button
+          key={speed}
+          variant={playbackSpeed === speed ? "default" : "ghost"}
+          size="sm"
+          className="w-full justify-start"
+          onClick={() => handleSpeedChange(speed)}
+        >
+          {speed}x
+        </Button>
+      ))}
+    </div>
+  </PopoverContent>
+</Popover>
 ```
 
-### API Endpoints Used
+### Changes Summary
 
-| Endpoint | Purpose |
-|----------|---------|
-| `GET /api/v4/chapters/{id}` | Chapter metadata |
-| `GET /api/v4/verses/by_chapter/{id}?words=true&translation=131&per_page=300` | Verses with word data |
-| `GET /api/v4/chapter_recitations/5/{id}?segments=true` | Audio URL + word timing |
+| Location | Change |
+|----------|--------|
+| State | Add `playbackSpeed` state initialized to `1` |
+| Handler | Add `handleSpeedChange` function to update speed and apply to audio |
+| `playFromVerse` | Set `audio.playbackRate = playbackSpeed` after creating audio |
+| UI (header) | Add speed control popover next to Play All button |
+| Imports | Add `Gauge` icon and `Popover` components |
 
-Note: Translation ID 131 is "Dr. Mustafa Khattab, the Clear Quran" (English). Bengali word-by-word isn't available in this API, so we'll use English for word translations but can still show Bengali verse translation.
+### UI Placement
 
-### Audio Synchronization Flow
+The speed control will be placed in the surah header section, next to the "Play All" button:
 
 ```text
-1. User clicks Play (verse or Play All)
-   ↓
-2. Load full chapter audio file from API
-   ↓  
-3. Start playing, set up ontimeupdate handler
-   ↓
-4. Every ~50ms, check current playback time
-   ↓
-5. Find matching word segment:
-   - Loop through verses → segments
-   - Find segment where start_ms <= currentTime <= end_ms
-   ↓
-6. Update highlightedWord state
-   ↓
-7. Word span re-renders with .highlighted class
+[ Play All ] [ Gauge icon ] ... Playing verse X/Y
 ```
 
-## Summary of Changes
-
-| File | Type | Changes |
-|------|------|---------|
-| `src/pages/SurahReader.tsx` | Modify | Switch to Quran Foundation API, add word-level state, implement audio time tracking, render words as spans with click handling |
-| `src/components/quran/WordPopover.tsx` | New | Component for displaying word translation on click |
-| `src/index.css` | Modify | Add `.quran-word` and `.quran-word.highlighted` styles |
-
-## Notes
-
-- The chapter audio file is a single MP3 containing all verses, which works better for word synchronization than individual verse files
-- Word position in segments is 1-based, matching the word data from the API
-- Bengali verse translations will still work; only word-level translations are English
-- Verse-level highlighting (ring around card) continues to work alongside word highlighting
+When clicked, a compact popover opens with the 5 speed options as buttons, with the current speed highlighted.
 

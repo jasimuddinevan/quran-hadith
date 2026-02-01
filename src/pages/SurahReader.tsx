@@ -588,7 +588,7 @@ const SurahReader: React.FC = () => {
                       <p 
                         className="text-muted-foreground leading-relaxed border-t border-border pt-4"
                         dangerouslySetInnerHTML={{ 
-                          __html: DOMPurify.sanitize(verse.translations[0]?.text || '', {
+                          __html: DOMPurify.sanitize(verse.translations?.[0]?.text || '', {
                             ALLOWED_TAGS: ['em', 'strong', 'br', 'i', 'b'],
                             ALLOWED_ATTR: []
                           })

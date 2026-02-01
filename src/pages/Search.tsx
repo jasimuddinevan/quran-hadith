@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { Search as SearchIcon, Book, BookOpen, Clock, ArrowLeft, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useSearchParams, useNavigate, Link } from 'react-router-dom';
+import { Search as SearchIcon, Book, BookOpen, Clock, ArrowLeft, ChevronLeft, ChevronRight, Home, Filter } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -9,6 +9,20 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { searchQuran, type QuranSearchResult } from '@/lib/quranApi';
 import { searchHadiths, getCollectionName, type HadithResponse } from '@/lib/hadithApi';
 
@@ -40,25 +54,25 @@ const SearchResultCard: React.FC<{ result: CombinedResult; query: string; langua
     const r = result.quranResult;
     return (
       <Card 
-        className="hover:shadow-md transition-shadow cursor-pointer border-border/50"
+        className="hover:shadow-md transition-all duration-200 cursor-pointer border-border/50 hover:border-primary/30 group"
         onClick={() => navigate(`/quran/${r.surahNumber}?verse=${r.verseNumber}`)}
       >
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <Badge className="bg-primary/20 text-primary border-primary/30 shrink-0">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+            <Badge className="bg-primary/20 text-primary border-primary/30 shrink-0 w-fit">
               <BookOpen className="h-3 w-3 mr-1" />
               {language === 'bn' ? 'কুরআন' : 'Quran'}
             </Badge>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-muted-foreground mb-2">
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-1.5 sm:mb-2">
                 {language === 'bn' ? 'সূরা' : 'Surah'} {r.surahName} • {language === 'bn' ? 'আয়াত' : 'Verse'} {r.verseNumber}
               </p>
               {r.textArabic && (
-                <p className="text-lg font-arabic text-right mb-2 leading-loose" dir="rtl">
+                <p className="text-base sm:text-lg font-arabic text-right mb-2 leading-loose line-clamp-2" dir="rtl">
                   {r.textArabic}
                 </p>
               )}
-              <p className="text-sm text-foreground leading-relaxed">
+              <p className="text-xs sm:text-sm text-foreground leading-relaxed line-clamp-3 group-hover:text-primary/80 transition-colors">
                 {highlightText(r.textTranslation)}
               </p>
             </div>
@@ -75,25 +89,25 @@ const SearchResultCard: React.FC<{ result: CombinedResult; query: string; langua
     
     return (
       <Card 
-        className="hover:shadow-md transition-shadow cursor-pointer border-border/50"
+        className="hover:shadow-md transition-all duration-200 cursor-pointer border-border/50 hover:border-gold/30 group"
         onClick={() => navigate(`/hadith?collection=${h.bookSlug}&hadith=${h.hadithNumber}`)}
       >
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <Badge className="bg-gold/20 text-gold border-gold/30 shrink-0">
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+            <Badge className="bg-gold/20 text-gold border-gold/30 shrink-0 w-fit">
               <Book className="h-3 w-3 mr-1" />
               {language === 'bn' ? 'হাদিস' : 'Hadith'}
             </Badge>
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-muted-foreground mb-2">
+              <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-1.5 sm:mb-2">
                 {collectionName} #{h.hadithNumber}
               </p>
               {h.hadithArabic && (
-                <p className="text-lg font-arabic text-right mb-2 leading-loose line-clamp-2" dir="rtl">
+                <p className="text-base sm:text-lg font-arabic text-right mb-2 leading-loose line-clamp-2" dir="rtl">
                   {h.hadithArabic}
                 </p>
               )}
-              <p className="text-sm text-foreground leading-relaxed line-clamp-3">
+              <p className="text-xs sm:text-sm text-foreground leading-relaxed line-clamp-3 group-hover:text-gold/80 transition-colors">
                 {highlightText(displayText)}
               </p>
             </div>
@@ -107,16 +121,16 @@ const SearchResultCard: React.FC<{ result: CombinedResult; query: string; langua
 };
 
 const SearchSkeleton: React.FC = () => (
-  <div className="space-y-4">
+  <div className="space-y-3 sm:space-y-4">
     {[1, 2, 3, 4, 5].map((i) => (
       <Card key={i} className="border-border/50">
-        <CardContent className="p-4">
-          <div className="flex items-start gap-3">
-            <Skeleton className="h-6 w-16 rounded-full" />
+        <CardContent className="p-3 sm:p-4">
+          <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+            <Skeleton className="h-5 w-16 rounded-full" />
             <div className="flex-1 space-y-2">
-              <Skeleton className="h-4 w-48" />
-              <Skeleton className="h-6 w-full" />
-              <Skeleton className="h-4 w-3/4" />
+              <Skeleton className="h-3 sm:h-4 w-32 sm:w-48" />
+              <Skeleton className="h-5 sm:h-6 w-full" />
+              <Skeleton className="h-3 sm:h-4 w-3/4" />
             </div>
           </div>
         </CardContent>
@@ -199,7 +213,6 @@ const SearchPage: React.FC = () => {
     const results: CombinedResult[] = [];
     
     if (activeTab === 'all') {
-      // Interleave quran and hadith results
       const maxLen = Math.max(quranResults.length, hadithResults.length);
       for (let i = 0; i < maxLen; i++) {
         if (i < quranResults.length) {
@@ -244,42 +257,125 @@ const SearchPage: React.FC = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const filterLabels: Record<FilterType, { en: string; bn: string }> = {
+    all: { en: 'All', bn: 'সব' },
+    quran: { en: 'Quran', bn: 'কুরআন' },
+    hadith: { en: 'Hadith', bn: 'হাদিস' },
+  };
+
+  // Generate page numbers for pagination
+  const getPageNumbers = () => {
+    const pages: (number | 'ellipsis')[] = [];
+    const maxVisible = 5;
+    
+    if (totalPages <= maxVisible) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      if (currentPage <= 3) {
+        pages.push(1, 2, 3, 4, 'ellipsis', totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1, 'ellipsis', totalPages - 3, totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        pages.push(1, 'ellipsis', currentPage - 1, currentPage, currentPage + 1, 'ellipsis', totalPages);
+      }
+    }
+    
+    return pages;
+  };
+
   return (
     <Layout>
-      <div className="container py-6">
-        {/* Back button and search bar */}
-        <div className="flex items-center gap-4 mb-6">
+      <div className="container py-4 sm:py-6 px-4 sm:px-6">
+        {/* Breadcrumb Navigation */}
+        <Breadcrumb className="mb-4 sm:mb-6">
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <BreadcrumbLink asChild>
+                <Link to="/" className="flex items-center gap-1 text-muted-foreground hover:text-foreground">
+                  <Home className="h-3.5 w-3.5" />
+                  <span className="hidden sm:inline">{language === 'bn' ? 'হোম' : 'Home'}</span>
+                </Link>
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage className="text-foreground font-medium">
+                {language === 'bn' ? 'সার্চ' : 'Search'}
+              </BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
+        {/* Search Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
           <Button 
-            variant="ghost" 
-            size="icon"
+            variant="outline" 
+            size="sm"
             onClick={() => navigate('/')}
-            className="shrink-0"
+            className="shrink-0 w-fit gap-2"
           >
-            <ArrowLeft className="h-5 w-5" />
+            <ArrowLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">{language === 'bn' ? 'ফিরে যান' : 'Back'}</span>
           </Button>
           
-          <form onSubmit={handleSearch} className="flex-1 max-w-2xl">
-            <div className="relative">
+          <form onSubmit={handleSearch} className="flex-1 w-full">
+            <div className="relative flex items-center">
               <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 value={searchInput}
                 onChange={(e) => setSearchInput(e.target.value)}
                 placeholder={t('hero.search')}
-                className="pl-10 pr-4"
+                className="pl-10 pr-24 sm:pr-28 py-2.5 text-sm sm:text-base"
               />
+              {/* Mobile Filter Dropdown */}
+              <div className="absolute right-2 flex items-center gap-1">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 sm:h-8 px-2 sm:px-3 text-xs sm:text-sm gap-1"
+                    >
+                      <Filter className="h-3.5 w-3.5 sm:hidden" />
+                      <span className="hidden sm:inline">
+                        {language === 'bn' ? filterLabels[activeTab].bn : filterLabels[activeTab].en}
+                      </span>
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={() => handleTabChange('all')}>
+                      {language === 'bn' ? 'সব' : 'All'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleTabChange('quran')}>
+                      {language === 'bn' ? 'কুরআন' : 'Quran'}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleTabChange('hadith')}>
+                      {language === 'bn' ? 'হাদিস' : 'Hadith'}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="h-7 sm:h-8 px-2 sm:px-3"
+                >
+                  <SearchIcon className="h-3.5 w-3.5" />
+                </Button>
+              </div>
             </div>
           </form>
         </div>
 
         {/* Results header */}
         {query && (
-          <div className="mb-6">
-            <h1 className="text-2xl font-bold mb-2">
-              {t('search.resultsFor')} "{query}"
+          <div className="mb-4 sm:mb-6">
+            <h1 className="text-lg sm:text-2xl font-bold mb-1 sm:mb-2 line-clamp-1">
+              {t('search.resultsFor')} "<span className="text-primary">{query}</span>"
             </h1>
             {!isLoading && (
-              <p className="text-sm text-muted-foreground flex items-center gap-2">
-                <span>{t('search.found')} {totalResults} {t('search.results')}</span>
+              <p className="text-xs sm:text-sm text-muted-foreground flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span>{t('search.found')} <strong>{totalResults.toLocaleString()}</strong> {t('search.results')}</span>
                 <span className="inline-flex items-center gap-1">
                   <Clock className="h-3 w-3" />
                   {searchTime.toFixed(2)} {t('search.seconds')}
@@ -289,14 +385,14 @@ const SearchPage: React.FC = () => {
           </div>
         )}
 
-        {/* Filter tabs */}
-        <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-6">
-          <TabsList className="bg-muted/50">
+        {/* Filter tabs - Desktop */}
+        <Tabs value={activeTab} onValueChange={handleTabChange} className="mb-4 sm:mb-6">
+          <TabsList className="bg-muted/50 hidden sm:inline-flex">
             <TabsTrigger value="all" className="gap-2">
               {t('search.all')}
               {!isLoading && query && (
                 <Badge variant="secondary" className="text-xs">
-                  {quranTotal + hadithTotal}
+                  {(quranTotal + hadithTotal).toLocaleString()}
                 </Badge>
               )}
             </TabsTrigger>
@@ -304,7 +400,7 @@ const SearchPage: React.FC = () => {
               {t('search.quran')}
               {!isLoading && query && (
                 <Badge variant="secondary" className="text-xs">
-                  {quranTotal}
+                  {quranTotal.toLocaleString()}
                 </Badge>
               )}
             </TabsTrigger>
@@ -312,23 +408,50 @@ const SearchPage: React.FC = () => {
               {t('search.hadith')}
               {!isLoading && query && (
                 <Badge variant="secondary" className="text-xs">
-                  {hadithTotal}
+                  {hadithTotal.toLocaleString()}
                 </Badge>
               )}
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value={activeTab} className="mt-6">
+          {/* Mobile filter pills */}
+          <div className="flex sm:hidden gap-2 overflow-x-auto pb-2 -mx-4 px-4 scrollbar-hide">
+            {(['all', 'quran', 'hadith'] as FilterType[]).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => handleTabChange(tab)}
+                className={`flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                  activeTab === tab 
+                    ? 'bg-primary text-primary-foreground' 
+                    : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                }`}
+              >
+                {language === 'bn' ? filterLabels[tab].bn : filterLabels[tab].en}
+                {!isLoading && query && (
+                  <span className="ml-1.5 opacity-80">
+                    {tab === 'all' 
+                      ? (quranTotal + hadithTotal).toLocaleString() 
+                      : tab === 'quran' 
+                        ? quranTotal.toLocaleString() 
+                        : hadithTotal.toLocaleString()
+                    }
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          <TabsContent value={activeTab} className="mt-4 sm:mt-6">
             {isLoading ? (
               <SearchSkeleton />
             ) : combinedResults.length === 0 && query ? (
-              <div className="text-center py-12">
-                <SearchIcon className="h-12 w-12 mx-auto text-muted-foreground/50 mb-4" />
-                <h3 className="text-lg font-medium mb-2">{t('search.noResults')}</h3>
-                <p className="text-muted-foreground">{t('search.tryDifferent')}</p>
+              <div className="text-center py-8 sm:py-12">
+                <SearchIcon className="h-10 sm:h-12 w-10 sm:w-12 mx-auto text-muted-foreground/50 mb-3 sm:mb-4" />
+                <h3 className="text-base sm:text-lg font-medium mb-2">{t('search.noResults')}</h3>
+                <p className="text-sm text-muted-foreground px-4">{t('search.tryDifferent')}</p>
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {combinedResults.map((result, index) => (
                   <SearchResultCard 
                     key={`${result.type}-${index}`} 
@@ -340,33 +463,84 @@ const SearchPage: React.FC = () => {
               </div>
             )}
 
-            {/* Pagination */}
+            {/* Enhanced Pagination */}
             {!isLoading && totalPages > 1 && (
-              <div className="flex items-center justify-center gap-2 mt-8">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage - 1)}
-                  disabled={currentPage <= 1}
-                >
-                  <ChevronLeft className="h-4 w-4 mr-1" />
-                  {language === 'bn' ? 'পূর্ববর্তী' : 'Previous'}
-                </Button>
-                <span className="text-sm text-muted-foreground px-4">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mt-6 sm:mt-8">
+                {/* Mobile: Simple prev/next */}
+                <div className="flex sm:hidden items-center gap-2 w-full">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage <= 1}
+                    className="flex-1"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    {language === 'bn' ? 'পূর্ব' : 'Prev'}
+                  </Button>
+                  <span className="text-sm text-muted-foreground whitespace-nowrap px-2">
+                    {currentPage}/{totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                    className="flex-1"
+                  >
+                    {language === 'bn' ? 'পরবর্তী' : 'Next'}
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+
+                {/* Desktop: Full pagination */}
+                <div className="hidden sm:flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage - 1)}
+                    disabled={currentPage <= 1}
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    {language === 'bn' ? 'পূর্ববর্তী' : 'Previous'}
+                  </Button>
+                  
+                  <div className="flex items-center gap-1 mx-2">
+                    {getPageNumbers().map((page, index) => (
+                      page === 'ellipsis' ? (
+                        <span key={`ellipsis-${index}`} className="px-2 text-muted-foreground">...</span>
+                      ) : (
+                        <Button
+                          key={page}
+                          variant={currentPage === page ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => handlePageChange(page)}
+                          className="w-9 h-9 p-0"
+                        >
+                          {page}
+                        </Button>
+                      )
+                    ))}
+                  </div>
+                  
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handlePageChange(currentPage + 1)}
+                    disabled={currentPage >= totalPages}
+                  >
+                    {language === 'bn' ? 'পরবর্তী' : 'Next'}
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                </div>
+
+                {/* Results info */}
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {language === 'bn' 
-                    ? `পৃষ্ঠা ${currentPage} / ${totalPages}`
-                    : `Page ${currentPage} of ${totalPages}`
+                    ? `${((currentPage - 1) * pageSize) + 1}-${Math.min(currentPage * pageSize, totalResults)} এর ${totalResults}`
+                    : `${((currentPage - 1) * pageSize) + 1}-${Math.min(currentPage * pageSize, totalResults)} of ${totalResults}`
                   }
-                </span>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handlePageChange(currentPage + 1)}
-                  disabled={currentPage >= totalPages}
-                >
-                  {language === 'bn' ? 'পরবর্তী' : 'Next'}
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
+                </p>
               </div>
             )}
           </TabsContent>
@@ -374,17 +548,43 @@ const SearchPage: React.FC = () => {
 
         {/* Empty state when no query */}
         {!query && (
-          <div className="text-center py-12">
-            <SearchIcon className="h-16 w-16 mx-auto text-muted-foreground/30 mb-4" />
-            <h3 className="text-xl font-medium mb-2">
+          <div className="text-center py-8 sm:py-12">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-full bg-muted/50 flex items-center justify-center">
+              <SearchIcon className="h-8 w-8 sm:h-10 sm:w-10 text-muted-foreground/50" />
+            </div>
+            <h3 className="text-lg sm:text-xl font-medium mb-2">
               {language === 'bn' ? 'কুরআন ও হাদিস খুঁজুন' : 'Search Quran & Hadith'}
             </h3>
-            <p className="text-muted-foreground max-w-md mx-auto">
+            <p className="text-sm text-muted-foreground max-w-md mx-auto px-4">
               {language === 'bn' 
                 ? 'বাংলা বা ইংরেজিতে সার্চ করুন এবং কুরআন ও হাদিস থেকে আপনার প্রশ্নের উত্তর খুঁজুন'
                 : 'Search in Bengali or English to find answers from the Quran and Hadith collections'
               }
             </p>
+            
+            {/* Quick search suggestions */}
+            <div className="mt-6 flex flex-wrap justify-center gap-2 px-4">
+              {[
+                { en: 'prayer', bn: 'নামাজ' },
+                { en: 'patience', bn: 'ধৈর্য' },
+                { en: 'mercy', bn: 'রহমত' },
+                { en: 'charity', bn: 'দান' },
+              ].map((term) => (
+                <Button
+                  key={term.en}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    const q = language === 'bn' ? term.bn : term.en;
+                    setSearchInput(q);
+                    setSearchParams({ q, filter: activeTab, page: '1' });
+                  }}
+                  className="rounded-full text-xs"
+                >
+                  {language === 'bn' ? term.bn : term.en}
+                </Button>
+              ))}
+            </div>
           </div>
         )}
       </div>

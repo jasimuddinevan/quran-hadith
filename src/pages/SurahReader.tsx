@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Bookmark, Copy, Play, Pause, Loader2, Square } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Bookmark, Copy, Play, Pause, Loader2, Square, Gauge } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useBookmarks } from '@/contexts/BookmarkContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useToast } from '@/hooks/use-toast';
 import WordPopover, { Word } from '@/components/quran/WordPopover';
 
@@ -67,6 +68,7 @@ const SurahReader: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isBuffering, setIsBuffering] = useState(false);
   const [isPlayingAll, setIsPlayingAll] = useState(false);
+  const [playbackSpeed, setPlaybackSpeed] = useState<number>(1);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const playAllRef = useRef<boolean>(false);
   const hasScrolledToAyah = useRef<boolean>(false);
@@ -249,6 +251,7 @@ const SurahReader: React.FC = () => {
 
     setIsBuffering(true);
     const audio = new Audio(chapterAudioUrl);
+    audio.playbackRate = playbackSpeed;
     audioRef.current = audio;
     
     // Get the start time for the verse
@@ -356,6 +359,13 @@ const SurahReader: React.FC = () => {
     setIsPlaying(false);
   };
 
+  const handleSpeedChange = (speed: number) => {
+    setPlaybackSpeed(speed);
+    if (audioRef.current) {
+      audioRef.current.playbackRate = speed;
+    }
+  };
+
   const surahNumber = parseInt(surahId || '1');
 
   // Helper to check if a word is highlighted
@@ -431,7 +441,7 @@ const SurahReader: React.FC = () => {
                 </p>
                 
                 {/* Play All Button */}
-                <div className="flex justify-center gap-2">
+                <div className="flex justify-center items-center gap-2">
                   <Button
                     onClick={handlePlayAll}
                     variant={isPlayingAll ? "destructive" : "default"}
@@ -450,6 +460,34 @@ const SurahReader: React.FC = () => {
                       </>
                     )}
                   </Button>
+                  
+                  {/* Speed Control */}
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" size="icon" disabled={!chapterAudioUrl}>
+                        <Gauge className="h-4 w-4" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-40 p-2" align="center">
+                      <div className="space-y-1">
+                        <p className="text-xs font-medium text-muted-foreground mb-2 px-2">
+                          {isEnglish ? 'Speed' : 'গতি'}
+                        </p>
+                        {[0.5, 0.75, 1, 1.25, 1.5].map((speed) => (
+                          <Button
+                            key={speed}
+                            variant={playbackSpeed === speed ? "default" : "ghost"}
+                            size="sm"
+                            className="w-full justify-start"
+                            onClick={() => handleSpeedChange(speed)}
+                          >
+                            {speed}x
+                          </Button>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                  
                   {isPlayingAll && currentlyPlayingVerse && (
                     <span className="text-sm text-muted-foreground flex items-center">
                       {isEnglish ? 'Playing verse' : 'বাজছে আয়াত'} {currentlyPlayingVerse}/{chapterInfo.verses_count}

@@ -178,7 +178,7 @@ const translations: Record<Language, Record<string, string>> = {
     // Hero
     'hero.title': 'ইলমপাথ',
     'hero.subtitle': 'কুরআন ও হাদিস • সম্পূর্ণ গাইডেন্স',
-    'hero.search': 'উদাহরণ: নামাজ সম্পর্কে কুরআন কি বলে?',
+    'hero.search': 'সার্চ করুন...',
     'hero.aiSubtitle': 'বাংলা বা ইংরেজিতে সার্চ করুন। এআই এর মাধ্যমে সঠিক তথ্য পান।',
     
     // Quick Access

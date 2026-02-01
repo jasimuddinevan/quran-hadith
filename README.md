@@ -1,73 +1,64 @@
-# Welcome to your Lovable project
+# ইলমপাথ (IlmPath)
 
-## Project info
+<div align="center">
+  <img src="public/pwa-512x512.png" alt="IlmPath Logo" width="120" height="120">
+  
+  **Your Comprehensive Islamic Learning Companion**
+  
+  কুরআন ও হাদিস • সম্পূর্ণ গাইডেন্স
+  
+  [Live App](https://ilmpath.lovable.app) • [Contact](https://bio.link/jasimuddin)
+</div>
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+---
 
-## How can I edit this code?
+## 📖 About
 
-There are several ways of editing your application.
+**IlmPath** (ইলমপাথ) is a comprehensive Islamic learning web application designed to help Muslims connect with the Holy Quran, Hadith collections, and daily Islamic practices. The app provides an elegant, user-friendly interface with full support for Bengali and English languages.
 
-**Use Lovable**
+### ✨ Key Features
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+- **📕 Quran Reader** - Complete Quran with word-by-word translation, transliteration, and audio recitation with real-time highlighting
+- **📚 Hadith Collections** - Access to major Hadith books including Bukhari, Muslim, Tirmidhi, and more
+- **🤲 Daily Duas** - Collection of essential daily supplications with Arabic text and translations
+- **🕌 Prayer Times** - Accurate prayer times based on your location
+- **📿 99 Names of Allah** - Beautiful display of Al-Asma ul-Husna with meanings
+- **🔖 Bookmarks** - Save your favorite verses, hadiths, and duas
+- **🔍 Smart Search** - Search across Quran and Hadith in Bengali or English
+- **🌙 Dark/Light Mode** - Comfortable reading in any lighting condition
+- **📱 PWA Support** - Install as an app on your device
 
-Changes made via Lovable will be committed automatically to this repo.
+## 🛠️ Technology Stack
 
-**Use your preferred IDE**
+- **Frontend:** React 18, TypeScript, Vite
+- **Styling:** Tailwind CSS, shadcn/ui
+- **State Management:** TanStack React Query
+- **APIs:** Quran Foundation API (api.quran.com)
+- **PWA:** Vite PWA Plugin
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 👨‍💻 Credits
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+**Created by [Jasim Uddin](https://bio.link/jasimuddin)**
 
-Follow these steps:
+This application is developed with ❤️ for the Muslim Ummah.
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+## 📄 License
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+**© 2024-2026 IlmPath. All Rights Reserved.**
 
-# Step 3: Install the necessary dependencies.
-npm i
+This is a **proprietary software product**. This application is:
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+- ✅ **Free to use** - No cost to access and use the application
+- ❌ **Not open source** - Source code is not licensed for redistribution
+- ❌ **Not for modification** - Unauthorized modification is prohibited
+- ❌ **Not for commercial use** - Cannot be used for commercial purposes without permission
 
-**Edit a file directly in GitHub**
+All content, design, and code are the intellectual property of the creator. Unauthorized copying, modification, distribution, or commercial use of this software is strictly prohibited.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+For inquiries, licensing, or collaboration opportunities, please contact: [bio.link/jasimuddin](https://bio.link/jasimuddin)
 
-**Use GitHub Codespaces**
+---
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+<div align="center">
+  <sub>Made with ❤️ for the Ummah</sub>
+</div>

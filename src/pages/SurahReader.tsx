@@ -102,13 +102,19 @@ const SurahReader: React.FC = () => {
         if (audioData.audio_file) {
           setChapterAudioUrl(audioData.audio_file.audio_url);
           
-          // Build timing map from timestamps
+          // Build timing map from timestamps (API returns 'timestamps' not 'verse_timings')
           const timingMap = new Map<string, AudioTimestamp>();
-          if (audioData.audio_file.verse_timings) {
-            audioData.audio_file.verse_timings.forEach((timing: AudioTimestamp) => {
-              timingMap.set(timing.verse_key, timing);
+          const timestamps = audioData.audio_file.timestamps || audioData.audio_file.verse_timings || [];
+          timestamps.forEach((timing: AudioTimestamp) => {
+            // Filter out incomplete segments (some have just [position] without times)
+            const validSegments = timing.segments?.filter(
+              (seg: number[]) => seg.length >= 3
+            ) || [];
+            timingMap.set(timing.verse_key, {
+              ...timing,
+              segments: validSegments as [number, number, number][]
             });
-          }
+          });
           setAudioTimings(timingMap);
         }
       } catch (err) {

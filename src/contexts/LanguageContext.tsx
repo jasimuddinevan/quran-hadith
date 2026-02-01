@@ -156,6 +156,10 @@ const translations: Record<Language, Record<string, string>> = {
     'search.hadith': 'Hadith',
     'search.noResults': 'No results found',
     'search.tryDifferent': 'Try different keywords or check your spelling',
+    'search.viewFull': 'View Full',
+    'search.goToSource': 'Go to Source',
+    'search.copied': 'Copied!',
+    'search.bookmarked': 'Bookmarked!',
     
     // Footer
     'footer.copyright': '© 2024 IlmPath. All rights reserved.',
@@ -306,6 +310,10 @@ const translations: Record<Language, Record<string, string>> = {
     'search.hadith': 'হাদিস',
     'search.noResults': 'কোনো ফলাফল পাওয়া যায়নি',
     'search.tryDifferent': 'অন্য শব্দ দিয়ে চেষ্টা করুন বা বানান পরীক্ষা করুন',
+    'search.viewFull': 'সম্পূর্ণ দেখুন',
+    'search.goToSource': 'মূল দেখুন',
+    'search.copied': 'কপি হয়েছে!',
+    'search.bookmarked': 'বুকমার্ক হয়েছে!',
     
     // Footer
     'footer.copyright': '© ২০২৪ ইলমপাথ। সর্বস্বত্ব সংরক্ষিত।',

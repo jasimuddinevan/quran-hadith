@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, useNavigate, Link } from 'react-router-dom';
-import { Search as SearchIcon, Book, BookOpen, Clock, ArrowLeft, ChevronLeft, ChevronRight, Home, Filter } from 'lucide-react';
+import { Search as SearchIcon, Book, BookOpen, Clock, ArrowLeft, ChevronLeft, ChevronRight, Home, Filter, Eye } from 'lucide-react';
 import Layout from '@/components/layout/Layout';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -23,6 +23,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import SearchResultFullView from '@/components/search/SearchResultFullView';
 import { searchQuran, type QuranSearchResult } from '@/lib/quranApi';
 import { searchHadiths, getCollectionName, type HadithResponse } from '@/lib/hadithApi';
 
@@ -40,6 +41,8 @@ const SearchResultCard: React.FC<{ result: CombinedResult; query: string; langua
   language 
 }) => {
   const navigate = useNavigate();
+  const { t } = useLanguage();
+  const [isFullViewOpen, setIsFullViewOpen] = useState(false);
   
   // Clean and highlight text - removes raw HTML tags and highlights query matches
   const cleanAndHighlightText = (text: string) => {
@@ -57,35 +60,60 @@ const SearchResultCard: React.FC<{ result: CombinedResult; query: string; langua
     );
   };
 
+  const handleViewFull = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsFullViewOpen(true);
+  };
+
   if (result.type === 'quran' && result.quranResult) {
     const r = result.quranResult;
     return (
-      <Card 
-        className="hover:shadow-md transition-all duration-200 cursor-pointer border-border/50 hover:border-primary/30 group"
-        onClick={() => navigate(`/quran/${r.surahNumber}?verse=${r.verseNumber}`)}
-      >
-        <CardContent className="p-3 sm:p-4">
-          <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
-            <Badge className="bg-primary/20 text-primary border-primary/30 shrink-0 w-fit">
-              <BookOpen className="h-3 w-3 mr-1" />
-              {language === 'bn' ? 'কুরআন' : 'Quran'}
-            </Badge>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-1.5 sm:mb-2">
-                {language === 'bn' ? 'সূরা' : 'Surah'} {r.surahName} • {language === 'bn' ? 'আয়াত' : 'Verse'} {r.verseNumber}
-              </p>
-              {r.textArabic && (
-                <p className="text-base sm:text-lg font-arabic text-right mb-2 leading-loose line-clamp-2" dir="rtl">
-                  {r.textArabic}
+      <>
+        <Card 
+          className="hover:shadow-md transition-all duration-200 cursor-pointer border-border/50 hover:border-primary/30 group"
+          onClick={() => navigate(`/quran/${r.surahNumber}?verse=${r.verseNumber}`)}
+        >
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+              <Badge className="bg-primary/20 text-primary border-primary/30 shrink-0 w-fit">
+                <BookOpen className="h-3 w-3 mr-1" />
+                {language === 'bn' ? 'কুরআন' : 'Quran'}
+              </Badge>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-1.5 sm:mb-2">
+                  {language === 'bn' ? 'সূরা' : 'Surah'} {r.surahName} • {language === 'bn' ? 'আয়াত' : 'Verse'} {r.verseNumber}
                 </p>
-              )}
-              <p className="text-xs sm:text-sm text-foreground leading-relaxed line-clamp-3 group-hover:text-primary/80 transition-colors">
-                {cleanAndHighlightText(r.textTranslation)}
-              </p>
+                {r.textArabic && (
+                  <p className="text-base sm:text-lg font-arabic text-right mb-2 leading-loose line-clamp-2" dir="rtl">
+                    {r.textArabic}
+                  </p>
+                )}
+                <p className="text-xs sm:text-sm text-foreground leading-relaxed line-clamp-3 group-hover:text-primary/80 transition-colors">
+                  {cleanAndHighlightText(r.textTranslation)}
+                </p>
+                
+                {/* View Full Button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleViewFull}
+                  className="mt-3 gap-1.5 h-8 px-3 text-xs text-primary hover:text-primary hover:bg-primary/10 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  {t('search.viewFull')}
+                </Button>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+        
+        <SearchResultFullView
+          open={isFullViewOpen}
+          onOpenChange={setIsFullViewOpen}
+          type="quran"
+          quranResult={r}
+        />
+      </>
     );
   }
 
@@ -95,32 +123,52 @@ const SearchResultCard: React.FC<{ result: CombinedResult; query: string; langua
     const displayText = language === 'bn' ? (h.hadithBengali || h.hadithEnglish) : h.hadithEnglish;
     
     return (
-      <Card 
-        className="hover:shadow-md transition-all duration-200 cursor-pointer border-border/50 hover:border-gold/30 group"
-        onClick={() => navigate(`/hadith?collection=${h.bookSlug}&hadith=${h.hadithNumber}`)}
-      >
-        <CardContent className="p-3 sm:p-4">
-          <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
-            <Badge className="bg-gold/20 text-gold border-gold/30 shrink-0 w-fit">
-              <Book className="h-3 w-3 mr-1" />
-              {language === 'bn' ? 'হাদিস' : 'Hadith'}
-            </Badge>
-            <div className="flex-1 min-w-0">
-              <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-1.5 sm:mb-2">
-                {collectionName} #{h.hadithNumber}
-              </p>
-              {h.hadithArabic && (
-                <p className="text-base sm:text-lg font-arabic text-right mb-2 leading-loose line-clamp-2" dir="rtl">
-                  {h.hadithArabic}
+      <>
+        <Card 
+          className="hover:shadow-md transition-all duration-200 cursor-pointer border-border/50 hover:border-gold/30 group"
+          onClick={() => navigate(`/hadith?collection=${h.bookSlug}&hadith=${h.hadithNumber}`)}
+        >
+          <CardContent className="p-3 sm:p-4">
+            <div className="flex flex-col sm:flex-row sm:items-start gap-2 sm:gap-3">
+              <Badge className="bg-gold/20 text-gold border-gold/30 shrink-0 w-fit">
+                <Book className="h-3 w-3 mr-1" />
+                {language === 'bn' ? 'হাদিস' : 'Hadith'}
+              </Badge>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs sm:text-sm font-medium text-muted-foreground mb-1.5 sm:mb-2">
+                  {collectionName} #{h.hadithNumber}
                 </p>
-              )}
-              <p className="text-xs sm:text-sm text-foreground leading-relaxed line-clamp-3 group-hover:text-gold/80 transition-colors">
-                {cleanAndHighlightText(displayText)}
-              </p>
+                {h.hadithArabic && (
+                  <p className="text-base sm:text-lg font-arabic text-right mb-2 leading-loose line-clamp-2" dir="rtl">
+                    {h.hadithArabic}
+                  </p>
+                )}
+                <p className="text-xs sm:text-sm text-foreground leading-relaxed line-clamp-3 group-hover:text-gold/80 transition-colors">
+                  {cleanAndHighlightText(displayText)}
+                </p>
+                
+                {/* View Full Button */}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleViewFull}
+                  className="mt-3 gap-1.5 h-8 px-3 text-xs text-gold hover:text-gold hover:bg-gold/10 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
+                >
+                  <Eye className="h-3.5 w-3.5" />
+                  {t('search.viewFull')}
+                </Button>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+        
+        <SearchResultFullView
+          open={isFullViewOpen}
+          onOpenChange={setIsFullViewOpen}
+          type="hadith"
+          hadithResult={h}
+        />
+      </>
     );
   }
 

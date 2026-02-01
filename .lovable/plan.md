@@ -1,158 +1,104 @@
 
-# Hero Search Feature Implementation
+# Search Results - Full View Modal Implementation
 
 ## Overview
-Implement a functional search feature in the hero section that allows users to search across Quran and Hadith content. The search bar will include a dropdown filter (All/Quran/Hadith) and navigate to a dedicated search results page showing matched content with highlighted search terms.
+Add a "View Full" button to each search result card that opens a modal/drawer showing the complete content of the Quran verse or Hadith. The implementation will use a responsive pattern: a bottom drawer on mobile and a centered dialog on desktop.
 
-## User Experience
+## Changes Required
 
-**Search Flow:**
-1. User types a search query in the hero search bar
-2. User can optionally select a filter: All (default), Quran, or Hadith
-3. Clicking search (or pressing Enter) navigates to `/search?q=query&filter=all`
-4. Search results page displays matching content with:
-   - Filter tabs for quick switching (All/Quran/Hadith)
-   - Result count and search time
-   - Highlighted search terms in results
-   - Pagination for large result sets
+### 1. Create Full View Modal Component
+**New file: `src/components/search/SearchResultFullView.tsx`**
 
-**Filter Options:**
-- **All**: Search both Quran and Hadith (default)
-- **Quran**: Search only in Quran verses (Arabic, English, Bengali translations)
-- **Hadith**: Search only in Hadith collections
+A responsive component that:
+- Uses `Drawer` (bottom sheet) on mobile screens
+- Uses `Dialog` (centered modal) on desktop screens
+- Displays full Arabic text (no truncation)
+- Shows complete translation
+- Includes action buttons: Copy, Share, Bookmark, Navigate to source
 
-## Technical Implementation
+**Content Structure:**
+- Header with type badge (Quran/Hadith) and reference
+- Full Arabic text in styled container
+- Complete translation text
+- Action buttons row
+- "Go to source" navigation button
 
-### 1. New Files to Create
+### 2. Update Search Result Card
+**File: `src/pages/Search.tsx`**
 
-**src/pages/Search.tsx**
-A dedicated search results page that:
-- Reads query parameters (`q` for query, `filter` for content type)
-- Displays tabbed interface similar to hadithbd.com (All/Hadith/Quran)
-- Shows result count and search timing
-- Renders results with source badges (Quran/Hadith)
-- Supports pagination (20 results per page)
-- Highlights matched keywords in results
+Modify `SearchResultCard` to:
+- Add state for modal open/close
+- Add "View Full" button (visible on hover for desktop, always visible on mobile)
+- Pass result data to the new modal component
+- Prevent card click from navigating when clicking "View Full"
 
-**src/lib/quranApi.ts**
-A new API module for Quran search functionality:
-- `searchQuran(query, language)` - Search across all verses
-- Uses the existing Quran.com API v4 for search
-- Caches results for performance
-- Returns structured results with surah info, verse numbers, and translations
+### 3. Add Translation Keys
+**File: `src/contexts/LanguageContext.tsx`**
 
-### 2. Files to Modify
+Add new translations:
+- `search.viewFull` - "View Full" / "সম্পূর্ণ দেখুন"
+- `search.goToSource` - "Go to Source" / "মূল দেখুন"
+- `search.copied` - "Copied!" / "কপি হয়েছে!"
+- `search.bookmarked` - "Bookmarked!" / "বুকমার্ক হয়েছে!"
 
-**src/components/home/HeroSection.tsx**
-- Add a filter dropdown (Select component) integrated into the search bar design
-- Add state for `searchFilter` ('all' | 'quran' | 'hadith')
-- Update `handleSearch` to navigate to `/search?q=${query}&filter=${filter}`
-- Style the dropdown to match the elegant gold-themed design
+## Implementation Details
 
-**src/App.tsx**
-- Add new route: `<Route path="/search" element={<Search />} />`
+### Mobile Experience (< 768px)
+- Bottom drawer slides up from bottom
+- Drag handle at top for dismissal
+- Full-width content
+- Large touch targets for action buttons
+- Swipe down to close
 
-**src/contexts/LanguageContext.tsx**
-- Add search-related translations for both English and Bengali
+### Desktop Experience (>= 768px)
+- Centered dialog with backdrop
+- Maximum width of 600px
+- Close button in corner
+- Keyboard accessible (Escape to close)
 
-### 3. Component Structure for Search Results Page
-
-```text
-+------------------------------------------+
-|  Search Results for "prayer"              |
-|  Found 245 results (0.5s)                 |
-+------------------------------------------+
-|  [ All ] [ Hadith ] [ Quran ]  <- Tabs   |
-+------------------------------------------+
-|                                          |
-|  +------------------------------------+  |
-|  | Quran  |  Surah 2, Verse 45        |  |
-|  | Arabic text with highlighting...   |  |
-|  | Translation with **prayer**...     |  |
-|  +------------------------------------+  |
-|                                          |
-|  +------------------------------------+  |
-|  | Hadith | Sahih Bukhari #982        |  |
-|  | Arabic text...                      |  |
-|  | "...about **prayer** times..."      |  |
-|  +------------------------------------+  |
-|                                          |
-|  [ Previous ] Page 1 of 13 [ Next ]      |
-+------------------------------------------+
-```
-
-### 4. Hero Section Search Bar Layout
+### Full View Content Layout
 
 ```text
-+--------------------------------------------------+
-|  🔍 | Search placeholder text...    | All ▾ | 🎤 |🔎|
-+--------------------------------------------------+
-        ^                               ^
-        Search icon                     Filter dropdown
++----------------------------------+
+|  [Badge: Quran/Hadith]     [X]  |
+|  Surah Al-Baqarah - Verse 255   |
++----------------------------------+
+|                                  |
+|  [Arabic Text Container]         |
+|  Full Arabic text with proper    |
+|  right-to-left formatting        |
+|  (styled with amber gradient)    |
+|                                  |
++----------------------------------+
+|  Translation                     |
+|                                  |
+|  Full translation text with      |
+|  no line clamping                |
+|                                  |
++----------------------------------+
+|  [Copy] [Share] [Bookmark]       |
+|                                  |
+|  [Go to Source Button]           |
++----------------------------------+
 ```
 
-The filter dropdown will appear as a compact button showing the current selection, opening to reveal All/Quran/Hadith options.
+### Action Handlers
+- **Copy**: Copies Arabic + Translation + Reference to clipboard
+- **Share**: Uses Web Share API on mobile, falls back to copy
+- **Bookmark**: Adds to bookmark context with proper type
+- **Go to Source**: Navigates to `/quran/{surah}?verse={verse}` or `/hadith?collection={slug}&hadith={number}`
 
-### 5. Quran Search API Implementation
+## Files to Create/Modify
 
-Using Quran.com API v4 search endpoint:
-```text
-GET https://api.quran.com/api/v4/search?q={query}&size=20&page={page}&language={lang}
-```
+| File | Action |
+|------|--------|
+| `src/components/search/SearchResultFullView.tsx` | Create |
+| `src/pages/Search.tsx` | Modify |
+| `src/contexts/LanguageContext.tsx` | Modify |
 
-Returns: verse key, Arabic text, translations, surah name, verse number
+## Technical Notes
 
-### 6. Changes Summary
-
-| File | Changes |
-|------|---------|
-| `src/pages/Search.tsx` | NEW - Search results page with tabs, results list, pagination |
-| `src/lib/quranApi.ts` | NEW - Quran search API functions |
-| `src/components/home/HeroSection.tsx` | Add filter dropdown, navigation logic |
-| `src/App.tsx` | Add `/search` route |
-| `src/contexts/LanguageContext.tsx` | Add search-related translations |
-
-### 7. New Translations to Add
-
-**English:**
-- `search.title`: 'Search Results'
-- `search.resultsFor`: 'Results for'
-- `search.found`: 'Found'
-- `search.results`: 'results'
-- `search.all`: 'All'
-- `search.quran`: 'Quran'
-- `search.hadith`: 'Hadith'
-- `search.noResults`: 'No results found'
-- `search.tryDifferent`: 'Try different keywords'
-- `search.searchTime`: 'Search completed in'
-- `search.seconds`: 'seconds'
-
-**Bengali:**
-- `search.title`: 'অনুসন্ধান ফলাফল'
-- `search.resultsFor`: 'ফলাফল'
-- `search.found`: 'পাওয়া গেছে'
-- `search.results`: 'টি ফলাফল'
-- `search.all`: 'সব'
-- `search.quran`: 'কুরআন'
-- `search.hadith`: 'হাদিস'
-- `search.noResults`: 'কোনো ফলাফল পাওয়া যায়নি'
-- `search.tryDifferent`: 'অন্য কীওয়ার্ড চেষ্টা করুন'
-- `search.searchTime`: 'অনুসন্ধান সম্পন্ন হয়েছে'
-- `search.seconds`: 'সেকেন্ডে'
-
-### 8. Search Result Card Design
-
-Each result card will display:
-- Source badge (Quran/Hadith) with appropriate color
-- Reference info (Surah X:Y for Quran, Collection #Number for Hadith)
-- Arabic text
-- Translation text (Bengali/English based on language setting)
-- Highlighted search terms using `<mark>` tags
-
-### 9. Performance Considerations
-
-- Debounce search input (already implemented in hadith search)
-- Cache search results to avoid repeated API calls
-- Limit results per page to 20
-- Show loading skeleton while searching
-- Progressive loading for better UX
+- Uses existing `useIsMobile()` hook for responsive behavior
+- Leverages existing UI components: `Drawer`, `Dialog`, `Button`, `Badge`
+- Uses existing `useBookmarks()` and `useToast()` hooks
+- Follows existing styling patterns from `HadithCard.tsx` for Arabic text container

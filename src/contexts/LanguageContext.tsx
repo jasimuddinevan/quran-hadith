@@ -24,7 +24,7 @@ const translations: Record<Language, Record<string, string>> = {
     // Hero
     'hero.title': 'IlmPath',
     'hero.subtitle': 'Quran & Hadith • Complete Guidance',
-    'hero.search': 'Example: What does Quran say about prayer?',
+    'hero.search': 'Search...',
     'hero.aiSubtitle': 'Search in Bengali or English. Get accurate information through AI.',
     
     // Quick Access

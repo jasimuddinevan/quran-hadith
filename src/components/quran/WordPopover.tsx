@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import {
   Popover,
   PopoverContent,
@@ -13,6 +13,27 @@ export interface Word {
   translation?: { text: string };
   transliteration?: { text: string };
 }
+
+interface WordSpanProps {
+  isHighlighted: boolean;
+  children: React.ReactNode;
+  onClick?: () => void;
+}
+
+// ForwardRef span component for PopoverTrigger
+const WordSpan = forwardRef<HTMLSpanElement, WordSpanProps>(
+  ({ isHighlighted, children, onClick, ...props }, ref) => (
+    <span
+      ref={ref}
+      className={`quran-word ${isHighlighted ? 'highlighted' : ''}`}
+      onClick={onClick}
+      {...props}
+    >
+      {children}
+    </span>
+  )
+);
+WordSpan.displayName = 'WordSpan';
 
 interface WordPopoverProps {
   word: Word;
@@ -29,17 +50,19 @@ const WordPopover: React.FC<WordPopoverProps> = ({
 }) => {
   // Don't show popover for end markers (verse numbers)
   if (word.char_type_name === 'end') {
-    return <>{children}</>;
+    return (
+      <span className="quran-word opacity-70">
+        {children}
+      </span>
+    );
   }
 
   return (
     <Popover>
-      <PopoverTrigger asChild onClick={onWordClick}>
-        <span
-          className={`quran-word ${isHighlighted ? 'highlighted' : ''}`}
-        >
+      <PopoverTrigger asChild>
+        <WordSpan isHighlighted={isHighlighted} onClick={onWordClick}>
           {children}
-        </span>
+        </WordSpan>
       </PopoverTrigger>
       <PopoverContent className="w-64 p-4" align="center" side="top">
         <div className="text-center space-y-3">

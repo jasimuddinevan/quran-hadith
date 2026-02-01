@@ -155,7 +155,7 @@ const SurahReader: React.FC = () => {
 
   // Audio time update handler for word highlighting
   const handleTimeUpdate = useCallback(() => {
-    if (!audioRef.current || !isPlaying) return;
+    if (!audioRef.current) return;
     
     const currentTimeMs = audioRef.current.currentTime * 1000;
     
@@ -164,17 +164,21 @@ const SurahReader: React.FC = () => {
       if (currentTimeMs >= timing.timestamp_from && currentTimeMs <= timing.timestamp_to) {
         // Update currently playing verse
         const verseNum = parseInt(verseKey.split(':')[1]);
-        if (currentlyPlayingVerse !== verseNum) {
-          setCurrentlyPlayingVerse(verseNum);
-          // Scroll verse into view
-          const element = document.getElementById(`verse-${verseNum}`);
-          if (element) {
-            element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setCurrentlyPlayingVerse(prev => {
+          if (prev !== verseNum) {
+            // Scroll verse into view
+            setTimeout(() => {
+              const element = document.getElementById(`verse-${verseNum}`);
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }, 50);
           }
-        }
+          return verseNum;
+        });
         
         // Find the current word within segments
-        if (timing.segments) {
+        if (timing.segments && timing.segments.length > 0) {
           for (const segment of timing.segments) {
             const [wordPosition, startMs, endMs] = segment;
             if (currentTimeMs >= startMs && currentTimeMs <= endMs) {
@@ -182,11 +186,19 @@ const SurahReader: React.FC = () => {
               return;
             }
           }
+          // If no exact match, find closest segment
+          const lastSegment = timing.segments[timing.segments.length - 1];
+          if (currentTimeMs > lastSegment[2]) {
+            setHighlightedWord({ verseKey, position: lastSegment[0] });
+          }
         }
         return;
       }
     }
-  }, [audioTimings, currentlyPlayingVerse, isPlaying]);
+    
+    // Clear highlight if no match
+    setHighlightedWord(null);
+  }, [audioTimings]);
 
   const handleCopy = (verse: VerseWithWords) => {
     const arabicText = verse.words
